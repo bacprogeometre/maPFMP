@@ -1,0 +1,1751 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px;font-family:system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Ma PFMP</title>
+<meta name="theme-color" content="#FFFFFF">
+<meta name="application-name" content="Ma PFMP">
+<meta name="apple-mobile-web-app-title" content="Ma PFMP">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="icons/logo.svg">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+</head>
+<body>
+<style>
+/* Layout : appli mobile d'abord — barre du haut, contenu en colonne unique (max 760px), onglets en bas pour l'élève.
+   Thème clair. 5 palettes au choix (bouton « Couleurs ») : Ma PFMP (couleurs du logo, défaut), lavande, corail, océan, menthe.
+   --accent = couleur principale, --accent-2 = son dégradé, --pop = couleur flash pour les petits accents. */
+:root{
+  --surface:#FFFFFF; --mark:#E5484D; --mark-soft:#FDEBEC; --ok:#18A058; --ok-soft:#E2F6EA; --warn:#C27B0A; --warn-soft:#FFF4DB;
+  --bg:#F4F7FB; --sunk:#E9EFF6; --line:#DCE4EE; --ink:#13243F; --muted:#586679;
+  --accent:#1F4F8F; --accent-2:#3E72B5; --accent-ink:#163E73; --accent-soft:#E4ECF7; --on-accent:#FFFFFF;
+  --pop:#5DAF5A; --pop-ink:#2B6A2B; --pop-soft:#E6F3E4;
+  --glow:color-mix(in srgb,var(--accent) 18%,transparent);
+  --shadow:0 1px 2px rgba(25,20,46,.04),0 8px 24px rgba(25,20,46,.06);
+  --f-display:"Bricolage Grotesque","Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
+  --f-body:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:18px; --tab-h:64px; color-scheme:light;
+}
+:root[data-palette="lavande"]{ --bg:#F8F7FD; --sunk:#EFEDF9; --line:#E5E1F5; --ink:#1E1A33; --muted:#655F7E;
+  --accent:#6F5DD3; --accent-2:#9385E3; --accent-ink:#4E3FAE; --accent-soft:#EFECFB; --pop:#B5D36A; --pop-ink:#465811; --pop-soft:#F1F6DF }
+:root[data-palette="corail"]{ --bg:#FDF8F6; --sunk:#F8EDE8; --line:#F0E1DB; --ink:#2A1A17; --muted:#77605A;
+  --accent:#DD6B5A; --accent-2:#EC977D; --accent-ink:#B14738; --accent-soft:#FBECE8; --pop:#EDBF55; --pop-ink:#664A00; --pop-soft:#FBF2DB }
+:root[data-palette="ocean"]{ --bg:#F5F8FD; --sunk:#E9F0FA; --line:#DCE6F5; --ink:#132036; --muted:#566379;
+  --accent:#3A72CF; --accent-2:#64A3DC; --accent-ink:#2656A8; --accent-soft:#E7EFFB; --pop:#EDBF55; --pop-ink:#664A00; --pop-soft:#FBF2DB }
+:root[data-palette="menthe"]{ --bg:#F4FAF7; --sunk:#E6F3ED; --line:#D8ECE2; --ink:#12261E; --muted:#526B61;
+  --accent:#2C9C79; --accent-2:#68C3A3; --accent-ink:#1E765B; --accent-soft:#E2F4EC; --pop:#E58CA6; --pop-ink:#872846; --pop-soft:#FBE8EE }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body);margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;line-height:1.2;letter-spacing:-.02em;text-wrap:balance;margin:0}
+h1{font-size:1.85rem;font-weight:800} h2{font-size:1.3rem} h3{font-size:1.08rem;font-weight:700}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* barre du haut */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:10px}
+.brand{display:flex;flex-direction:column;min-width:0;flex:1}
+.eyebrow{font:500 .72rem/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.brand strong{font:800 1.05rem/1.2 var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.logo-img{flex:none;width:44px;height:44px;display:block}
+.login-logo{display:block;width:260px;max-width:80%;height:auto;margin:8px auto 4px}
+.logo{flex:none;width:40px;height:40px;border-radius:14px;background:linear-gradient(140deg,var(--accent),var(--accent-2));color:var(--on-accent);display:flex;align-items:center;justify-content:center;font:600 .82rem/1 var(--f-display);letter-spacing:.06em}
+.brand-sub{font-size:.82rem;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* panneau d'accueil */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow)}
+.hero .head{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--accent) 0%,var(--accent-2) 100%);color:var(--on-accent);padding:20px 18px 18px;display:flex;flex-direction:column;gap:4px}
+.hero .head::after{content:"";position:absolute;right:-46px;bottom:-64px;width:150px;height:150px;border-radius:50%;background:var(--pop);opacity:.28;pointer-events:none}
+.hero .head > *{position:relative;z-index:1}
+.hero .kicker{font:500 .72rem/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;opacity:.9}
+.hero h1{font-size:2rem;color:inherit;max-width:80%}
+.hero .sub{align-self:flex-start;margin-top:4px;background:var(--pop-soft);color:var(--pop-ink);font-size:.85rem;font-weight:700;padding:5px 12px;border-radius:999px}
+.hero .in{padding:14px 18px 18px;display:flex;flex-direction:column;gap:14px}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;margin:0}
+.facts div{min-width:0;display:flex;flex-direction:column;gap:2px}
+.facts dt{font:500 .72rem/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.facts dd small{display:block;font-weight:400;color:var(--muted);font-size:.85rem}
+.prog{display:flex;flex-direction:column;gap:6px}
+.prog .lab{display:flex;justify-content:space-between;font-size:.88rem;font-weight:500;color:var(--muted)}
+.prog .lab b{color:var(--ink);font-variant-numeric:tabular-nums}
+.prog .bar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}
+.prog .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:3px}
+.state{display:inline-flex;align-self:flex-start;font:500 .78rem/1 var(--f-mono);padding:6px 8px;border-radius:4px;background:var(--accent-soft);color:var(--accent)}
+
+/* exemples d'activités */
+.ex-list{display:flex;flex-direction:column;gap:6px}
+.ex{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;color:var(--ink)}
+.ex:hover{border-color:var(--accent)}
+.ex.on{background:var(--accent-soft);border-color:var(--accent)}
+.ex-t{font-weight:600;line-height:1.3}
+.who{font-size:.85rem;color:var(--muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%}
+.demo-band{background:var(--warn-soft);color:var(--warn);font-size:.85rem}
+.demo-band .wrap{padding-block:6px}
+
+main{padding-block:20px calc(var(--tab-h) + 32px)}
+main.no-tabs{padding-bottom:40px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.muted{color:var(--muted)}
+.small{font-size:.875rem}
+.mono{font-family:var(--f-mono);font-weight:500}
+
+/* cartes et sections */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.tight{gap:6px}
+.section-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.section-title h2{font-size:1.35rem}
+
+/* boutons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer;text-decoration:none;color:var(--ink)}
+.btn:hover{background:var(--sunk)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);box-shadow:0 4px 12px var(--glow)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--mark);border-color:var(--mark)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.small{min-height:36px;padding:0 12px;font-size:.9rem}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.5;cursor:default}
+.big-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big-action{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:16px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);cursor:pointer;text-align:left;min-height:96px;color:var(--ink)}
+.big-action.primary{background:var(--accent);border-color:transparent;color:var(--on-accent);box-shadow:0 8px 22px var(--glow)}
+.big-action b{font:800 1.2rem/1.15 var(--f-display)}
+.big-action span{font-size:.85rem;opacity:.85}
+.big-actions .big-action:not(.primary){background:var(--pop-soft);border-color:transparent}
+
+/* formulaires */
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;min-width:0}
+label.f .hint{font-weight:400;font-size:.85rem;color:var(--muted)}
+input[type=text],input[type=date],input[type=password],select,textarea{width:100%;min-height:48px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+textarea{min-height:96px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+fieldset{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+legend{font-weight:600;padding:0;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:.92rem;user-select:none}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip:has(input:checked){background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:600}
+.chip:has(input:focus-visible){outline:3px solid var(--accent);outline-offset:2px}
+.chip .code{font-family:var(--f-mono);font-size:.78rem;color:var(--accent)}
+.comp-list{display:flex;flex-direction:column;gap:6px}
+.comp-opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer;background:var(--surface)}
+.comp-opt:has(input:checked){background:var(--accent-soft);border-color:var(--accent)}
+.comp-opt input{margin-top:4px;width:18px;height:18px;flex:none;accent-color:var(--accent)}
+.comp-opt .code{font-family:var(--f-mono);font-size:.82rem;color:var(--accent);flex:none;width:2.6em;margin-top:2px}
+.radio-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.notice{border-left:4px solid var(--mark);background:var(--mark-soft);padding:10px 12px;border-radius:0 8px 8px 0;font-size:.92rem}
+.notice.info{border-color:var(--accent);background:var(--accent-soft)}
+details.more{border-top:1px solid var(--line);padding-top:10px}
+details.more summary{cursor:pointer;font-weight:600;color:var(--accent)}
+
+/* pièces jointes */
+.pieces{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.piece{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--sunk);display:flex;flex-direction:column;min-width:0}
+.piece .thumb{aspect-ratio:4/3;max-width:100%;background:var(--sunk);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.piece .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.piece .file-ico{font:600 1.1rem var(--f-mono);color:var(--muted)}
+.piece .meta{padding:6px;display:flex;flex-direction:column;gap:6px;background:var(--surface)}
+.piece .meta input{min-height:38px;padding:6px 8px;font-size:.88rem}
+.piece .name{font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.add-zone{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.add-zone label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:84px;border:2px dashed var(--line);border-radius:var(--r);cursor:pointer;font-weight:600;text-align:center;padding:8px;background:var(--surface)}
+.add-zone label:hover{border-color:var(--accent)}
+.add-zone input{position:absolute;opacity:0;width:1px;height:1px}
+.add-zone small{font-weight:400;color:var(--muted);font-size:.8rem}
+
+/* liste de fiches */
+.entry{display:flex;gap:12px;align-items:stretch;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);cursor:pointer;text-align:left;width:100%}
+.entry:hover{border-color:var(--accent)}
+.entry .ph{width:72px;height:72px;flex:none;border-radius:8px;background:var(--sunk);overflow:hidden;display:flex;align-items:center;justify-content:center;font:600 .8rem var(--f-mono);color:var(--muted)}
+.entry .ph img{width:100%;height:100%;object-fit:cover}
+.entry .body{min-width:0;display:flex;flex-direction:column;gap:4px;flex:1}
+.entry .t{font-weight:700;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font:500 .72rem/1 var(--f-mono);padding:4px 6px;border-radius:4px;background:var(--sunk);color:var(--muted)}
+.tag.act{background:var(--accent-soft);color:var(--accent)}
+.tag.journal{background:var(--warn-soft);color:var(--warn)}
+.tag.com{background:var(--mark-soft);color:var(--mark)}
+.filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.filters .chip{flex:none}
+
+/* bornes de compétences */
+.bornes{display:flex;flex-direction:column;gap:12px}
+.bloc-head{display:flex;justify-content:space-between;gap:8px;font-size:.85rem;color:var(--muted)}
+.bloc-head b{color:var(--ink)}
+.borne-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}
+.borne{border:1px solid var(--line);border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:2px;background:var(--surface);min-width:0}
+.borne .c{font:500 .8rem var(--f-mono);color:var(--muted)}
+.borne .n{font:600 1.15rem/1 var(--f-display);font-variant-numeric:tabular-nums}
+.borne .l{font-size:.72rem;color:var(--muted);line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.borne.on{border-color:var(--ok);background:var(--ok-soft)}
+.borne.on .c{color:var(--ok)}
+.mini-bornes{display:flex;gap:3px;flex-wrap:wrap}
+.mini-bornes i{width:14px;height:14px;border-radius:3px;background:var(--sunk);border:1px solid var(--line)}
+.mini-bornes i.on{background:var(--ok);border-color:var(--ok)}
+.mini-bornes .gap{width:6px;border:0;background:none}
+
+/* détail fiche */
+.kv{display:grid;grid-template-columns:minmax(110px,30%) 1fr;gap:6px 12px}
+.kv dt{color:var(--muted);font-size:.9rem}
+.kv dd{margin:0;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.block-text{white-space:pre-wrap;overflow-wrap:anywhere}
+.figure{display:flex;flex-direction:column;gap:4px}
+.figure img{border-radius:8px;width:100%;max-height:70vh;object-fit:contain;background:var(--sunk)}
+.figure figcaption{font-size:.9rem;color:var(--muted);font-style:italic}
+.comment{border-left:3px solid var(--mark);padding:6px 10px;background:var(--mark-soft);border-radius:0 6px 6px 0}
+
+/* tableau de bord prof */
+.students{display:flex;flex-direction:column;gap:8px}
+.student{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);cursor:pointer;text-align:left;width:100%}
+.student:hover{border-color:var(--accent)}
+.student .nm{font-weight:700}
+.status{font:500 .75rem/1 var(--f-mono);padding:5px 8px;border-radius:999px;white-space:nowrap;align-self:start}
+.status.ok{background:var(--ok-soft);color:var(--ok)}
+.status.warn{background:var(--warn-soft);color:var(--warn)}
+.status.none{background:var(--mark-soft);color:var(--mark)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 14px}
+.stat b{display:block;font:800 1.6rem/1.1 var(--f-display);color:var(--accent-ink);font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted)}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{background:var(--sunk);font-weight:600}
+td.mono{font-variant-numeric:tabular-nums}
+
+/* rapport */
+.report{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px 20px;display:flex;flex-direction:column;gap:14px;font-size:.98rem}
+.report h1{font-size:1.8rem}
+.report h2{font-size:1.35rem;border-bottom:2px solid var(--ink);padding-bottom:4px;margin-top:10px}
+.report h3{font-size:1.1rem;margin-top:6px}
+.report .todo{color:var(--mark);font-style:italic}
+.report img{max-width:100%;border-radius:4px}
+
+/* calendrier */
+.cal{display:flex;flex-direction:column;gap:10px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cal-head h3{text-transform:capitalize}
+.cal-nav{display:flex;gap:4px}
+.cal-nav .btn{min-width:40px;padding:0 10px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal-dow{font:500 .7rem/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;padding:4px 0}
+.cal-day{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;min-height:48px;padding:6px 2px;border-radius:6px;border:1px solid transparent;background:none;cursor:pointer;color:var(--ink);font-variant-numeric:tabular-nums;font-size:.9rem}
+.cal-day:hover{border-color:var(--line)}
+.cal-day.out{visibility:hidden}
+.cal-day.we{color:var(--muted)}
+.cal-day.stage{background:var(--accent-soft)}
+.cal-day.miss::after{content:"";position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--mark)}
+.cal-day.today .n{outline:2px solid var(--ink);outline-offset:1px;border-radius:4px;padding:0 3px}
+.cal-day.sel{border-color:var(--accent);background:var(--surface);box-shadow:inset 0 0 0 1px var(--accent)}
+.cal-day .dots{display:flex;gap:3px;min-height:7px}
+.cal-day .dots i{width:7px;height:7px;border-radius:50%}
+.dot-f{background:var(--accent)} .dot-n{background:var(--warn)}
+.cal-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted)}
+.cal-legend span{display:inline-flex;align-items:center;gap:6px}
+.cal-legend i{display:inline-block;width:9px;height:9px;border-radius:50%}
+.cal-legend .sq{width:14px;height:12px;border-radius:3px;background:var(--accent-soft);border:1px solid var(--line)}
+.cal-sum{font-size:.85rem;color:var(--muted)}
+.cal-detail{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+
+/* version ordinateur (enseignant) */
+.shell{display:block}
+.side{display:none}
+.split-entry{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+.split-student{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+table.grid-table td,table.grid-table th{vertical-align:middle;white-space:normal}
+table.grid-table td.num,table.grid-table th.num,table.grid-table .status,table.grid-table .mini-bornes{white-space:nowrap;flex-wrap:nowrap}
+table.grid-table td{min-width:0}
+table.grid-table tbody tr{cursor:pointer}
+table.grid-table tbody tr:hover td{background:var(--sunk)}
+table.grid-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+table.form-table td{padding:6px}
+table.form-table input{min-height:40px;padding:6px 8px;min-width:120px}
+.desk .top .wrap,.desk .demo-band .wrap{max-width:1360px}
+.desk .shell{display:grid;grid-template-columns:232px minmax(0,1fr);max-width:1360px;margin:0 auto;align-items:start}
+.desk main.wrap{max-width:none;margin:0;padding-left:28px;padding-right:max(28px,env(safe-area-inset-right,0px))}
+.desk .side{display:flex;flex-direction:column;gap:4px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 72px);padding:20px 0 20px max(16px,env(safe-area-inset-left,0px))}
+.side .lbl{font:500 .7rem/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:14px 12px 6px}
+.side-link{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 12px;border-radius:6px;border:0;background:none;cursor:pointer;color:var(--ink);font-weight:500}
+.side-link:hover{background:var(--sunk)}
+.side-link.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.side-link svg{width:18px;height:18px;flex:none}
+.side-link .count{margin-left:auto;font:500 .75rem var(--f-mono);color:var(--muted)}
+.desk .stats{grid-template-columns:repeat(4,1fr)}
+.desk .split-entry{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-areas:"text imgs" "files imgs" "coms imgs";grid-template-rows:auto auto 1fr;align-items:start}
+.desk .split-entry .a-text{grid-area:text} .desk .split-entry .a-imgs{grid-area:imgs;position:sticky;top:90px} .desk .split-entry .a-files{grid-area:files} .desk .split-entry .a-coms{grid-area:coms}
+.desk .split-student{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+.desk .report{max-width:820px}
+
+.hero .sub.lead{background:none;color:inherit;padding:0;font-weight:500;font-size:.95rem;opacity:.95;max-width:80%}
+/* jauge du rapport */
+.gauge{display:flex;flex-direction:column;gap:10px}
+.gauge-top{display:flex;align-items:center;gap:14px}
+.gauge-ring{flex:none;width:76px;height:76px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--sunk) 0)}
+.gauge-ring span{width:60px;height:60px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font:800 1.15rem/1 var(--f-display);color:var(--accent-ink);font-variant-numeric:tabular-nums}
+.gauge-top h2{font-size:1.2rem}
+.todo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.todo li{display:flex;gap:8px;align-items:flex-start;font-size:.92rem}
+.todo li::before{content:"";flex:none;width:8px;height:8px;margin-top:7px;border-radius:50%;background:var(--accent)}
+.todo li.bonus::before{background:var(--pop)}
+.todo li.done{color:var(--muted)}
+.todo li.done::before{background:var(--ok)}
+/* cheminement des compétences */
+.chem svg{width:100%;height:auto;display:block;max-width:520px;margin:0 auto}
+.chem .seg{stroke:var(--line);stroke-width:2.5;stroke-dasharray:5 5;fill:none}
+.chem .seg.on{stroke:var(--accent);stroke-dasharray:none;stroke-width:3.5}
+.chem .seg.bonus{stroke:var(--pop)}
+.chem .st circle{fill:var(--surface);stroke:var(--line);stroke-width:2}
+.chem .st text{fill:var(--muted);font:700 9px var(--f-mono);text-anchor:middle;dominant-baseline:central}
+.chem .st.on circle{fill:var(--accent);stroke:var(--accent)}
+.chem .st.on text{fill:var(--on-accent)}
+.chem .st.bonus circle{stroke:var(--pop);stroke-dasharray:3 3}
+.chem .st.bonus.on circle{fill:var(--pop);stroke:var(--pop);stroke-dasharray:none}
+.chem .st.bonus.on text{fill:var(--pop-ink)}
+.chem .center-n{fill:var(--accent-ink);font:800 26px var(--f-display);text-anchor:middle}
+.chem .center-l{fill:var(--muted);font:600 10px var(--f-body);text-anchor:middle}
+.chem-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted);justify-content:center}
+.chem-legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+/* badges */
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.badge{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:10px 6px;border-radius:14px;background:var(--sunk);min-width:0}
+.badge svg{width:40px;height:40px}
+.badge .bl{font-weight:700;font-size:.8rem;line-height:1.2}
+.badge .bd{font-size:.72rem;color:var(--muted);line-height:1.25}
+.badge .m1{fill:var(--line)} .badge .m2{fill:var(--surface)} .badge .m3{fill:var(--muted)}
+.badge.on{background:var(--accent-soft)}
+.badge.on .m1{fill:var(--accent)} .badge.on .m3{fill:var(--accent)}
+.badge.on.bonus{background:var(--pop-soft)} .badge.on.bonus .m1,.badge.on.bonus .m3{fill:var(--pop)}
+.badge:not(.on){opacity:.75}
+/* réactions */
+.reacts{display:flex;flex-wrap:wrap;gap:8px}
+.rx-btn{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:700;cursor:pointer;color:var(--ink)}
+.rx-btn:hover{border-color:var(--accent)}
+.rx{display:inline-flex;align-items:center;font-weight:700;font-size:.8rem;padding:4px 10px;border-radius:999px}
+.rx-bravo{background:var(--ok-soft);color:var(--ok)} .rx-bienvu{background:var(--accent-soft);color:var(--accent-ink)} .rx-adevelopper{background:var(--warn-soft);color:var(--warn)}
+.comment .who-c{font-size:.8rem;font-weight:700;color:var(--muted)}
+.comment.tut{border-left-color:var(--pop);background:var(--pop-soft)}
+.tag.new{background:var(--pop);color:var(--pop-ink)}
+.tab .dot{position:absolute;top:8px;right:calc(50% - 22px);width:10px;height:10px;border-radius:50%;background:var(--mark);border:2px solid var(--surface)}
+.linkbox{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.linkbox code{flex:1;min-width:0;overflow-wrap:anywhere;font:500 .78rem var(--f-mono);background:var(--sunk);padding:8px 10px;border-radius:10px}
+/* espace tuteur */
+.tut-entry{display:flex;flex-direction:column;gap:10px}
+/* choix des couleurs */
+.pal-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);background:conic-gradient(var(--accent) 0 50%,var(--pop) 50% 100%);cursor:pointer;flex:none;padding:0}
+.pal-pop{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;z-index:8;width:240px}
+.pal-pop b{grid-column:1/-1;font-size:.85rem}
+.pal-opt{display:flex;align-items:center;gap:8px;padding:8px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ink)}
+.pal-opt.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.pal-pop .pal-opt:first-of-type{grid-column:1/-1}
+.pal-opt i{width:22px;height:22px;border-radius:50%;flex:none}
+.top{position:sticky}
+.top .wrap{position:relative}
+
+/* onglets bas */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.tabbar .inner{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);height:var(--tab-h)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;cursor:pointer;color:var(--muted);font-size:.78rem;font-weight:600}
+.tab svg{width:24px;height:24px}
+.tab{position:relative}
+.tab .ico{display:flex;align-items:center;justify-content:center;width:56px;height:30px;border-radius:15px;transition:background .15s}
+.tab.on{color:var(--accent-ink);font-weight:700}
+.tab.on .ico{background:var(--accent-soft)}
+.tab.on::before{content:"";position:absolute;top:0;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:var(--accent)}
+.tab.add.on::before{display:none}
+@media (prefers-reduced-motion:reduce){.tab .ico{transition:none}}
+.tab.add .plus{width:40px;height:40px;border-radius:50%;background:var(--accent);box-shadow:0 4px 12px var(--glow);color:var(--on-accent);display:flex;align-items:center;justify-content:center}
+
+/* modale et toast */
+.overlay{position:fixed;inset:0;z-index:20;background:rgba(22,40,44,.4);display:flex;align-items:flex-end;justify-content:center;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}
+.dialog{background:var(--surface);border-radius:14px;padding:20px;max-width:440px;width:100%;display:flex;flex-direction:column;gap:14px}
+@media (min-width:600px){.overlay{align-items:center}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab-h) + 16px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;font-size:.92rem;max-width:calc(100% - 32px)}
+.spinner{width:18px;height:18px;border:3px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation-duration:3s}}
+.progress{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);width:0}
+
+/* connexion */
+.login{max-width:440px;margin:0 auto;padding-block:32px}
+
+@media (max-width:420px){
+  .who{display:none}
+  .grid2,.radio-list{grid-template-columns:1fr}
+  .kv{grid-template-columns:1fr}
+  .kv dt{margin-top:6px}
+  .stats .stat b{font-size:1.3rem}
+}
+</style>
+
+<header class="top"><div class="wrap">
+  <img class="logo-img" src="icons/logo.svg" width="44" height="44" alt="Ma PFMP">
+  <div class="brand"><strong id="brandMain">Bac Pro Géomètre</strong><span class="brand-sub" id="brandSub">Lycée Pierre Mendès France, Rennes</span></div>
+  <div class="who" id="who"></div>
+  <button class="pal-btn" id="palBtn" type="button" aria-label="Changer les couleurs" aria-expanded="false" title="Couleurs"></button>
+  <button class="btn small ghost" id="logoutBtn" hidden>Quitter</button>
+  <div class="pal-pop" id="palPop" hidden role="dialog" aria-label="Couleurs de l'appli"></div>
+</div></header>
+<div class="demo-band" id="demoBand" hidden><div class="wrap">Mode démonstration : les données restent dans ce navigateur. Pour l'utiliser avec la classe, suivez le guide d'installation.</div></div>
+<div class="shell"><aside class="side" id="side" aria-label="Navigation professeur"></aside><main class="wrap" id="view"><p class="muted">Chargement…</p></main></div>
+<nav class="tabbar" id="tabbar" hidden><div class="inner" id="tabs"></div></nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+/* =====================================================================
+   CONFIGURATION — à remplir pour l'utilisation réelle (voir le guide).
+   Laissés vides, l'appli fonctionne en mode démonstration.
+   ===================================================================== */
+const CONFIG = {
+  SUPABASE_URL: "https://frkdlajmliunjtcnnjcr.supabase.co",          // ex. "https://abcdefgh.supabase.co"
+  SUPABASE_ANON_KEY: "sb_publishable_W-su2AZah15P-dRitmXdNg_oevITjwC",     // clé "anon public" du projet
+  EMAIL_DOMAIN: "pfmp.pmf-rennes.fr", // domaine fictif des comptes élèves
+  BUCKET: "pfmp",
+  LYCEE: "Lycée Pierre Mendès France, Rennes",     // affiché dans l'en-tête et le rapport Word
+  LYCEE_COURT: "Lycée PMF Rennes",                 // bandeau d'accueil
+  DIPLOME: "Bac Pro Géomètre"
+};
+
+/* =====================================================================
+   RÉFÉRENTIEL — Bac Pro Géomètre (arrêté du 7 mars 2024, 1re session 2027)
+   ===================================================================== */
+const COMPETENCES = [
+  {c:"C01",l:"Gérer les informations liées à son intervention au sein d'un collectif de travail",bloc:1},
+  {c:"C02",l:"Choisir le matériel",bloc:1},
+  {c:"C03",l:"Intégrer les enjeux du développement durable",bloc:1},
+  {c:"C04",l:"Participer à l'analyse foncière",bloc:1},
+  {c:"C05",l:"Produire des documents fonciers",bloc:1},
+  {c:"C06",l:"Sécuriser son intervention",bloc:2},
+  {c:"C07",l:"Réaliser un levé ou un récolement",bloc:2},
+  {c:"C08",l:"Réaliser une implantation",bloc:2},
+  {c:"C09",l:"Géoréférencer",bloc:2},
+  {c:"C10",l:"Traiter les données",bloc:2},
+  {c:"C11",l:"Produire des documents techniques",bloc:2},
+  {c:"C12",l:"Détecter les réseaux",bloc:3},
+  {c:"C13",l:"Matérialiser les réseaux",bloc:3},
+  {c:"C14",l:"Rendre compte oralement ou par écrit",bloc:3}
+];
+const BLOCS = {1:{t:"Bloc 1 · Préparation et mission foncière",u:"U2"},2:{t:"Bloc 2 · Mission topographique",u:"U31"},3:{t:"Bloc 3 · Détection de réseaux",u:"U32"}};
+const ACTIVITES = [
+  {a:"A1.1",pole:1,l:"Préparation et organisation des interventions",comp:["C01","C02","C03"],
+   aide:"Ordre de mission, recherche cadastre / Géofoncier, DT-DICT, choix et vérification du matériel, transfert de fichiers."},
+  {a:"A1.2",pole:1,l:"Prestations topographiques dans une mission foncière",comp:["C04","C05"],
+   aide:"Bornage, reconnaissance de limites, division parcellaire, DMPC, archivage Géofoncier."},
+  {a:"A2.1",pole:2,l:"Réalisation d'un levé topographique",comp:["C06","C07"],
+   aide:"Reconnaissance du site, mise en station, codification, croquis de levé, autocontrôles."},
+  {a:"A2.2",pole:2,l:"Réalisation d'un géoréférencement",comp:["C06","C09"],
+   aide:"GNSS (RTK, NRTK, statique), points d'appui, rattachement RGF93 / Lambert 93 / NGF-IGN69."},
+  {a:"A2.3",pole:2,l:"Réalisation d'une implantation",comp:["C06","C08"],
+   aide:"Fichier d'implantation, station libre ou connue, matérialisation, contrôle, PV d'implantation."},
+  {a:"A2.4",pole:2,l:"Réalisation d'un récolement",comp:["C06","C07"],
+   aide:"Ouvrages neufs ou modifiés (bâtiment, VRD) : relevé, croquis de récolement."},
+  {a:"A2.5",pole:2,l:"Traitement des données",comp:["C10","C11"],
+   aide:"Transfert, calculs (polygonale, station libre, altimétrie), DAO, plan topographique, nuage de points."},
+  {a:"A3.1",pole:3,l:"Détection et matérialisation des réseaux",comp:["C12","C13","C14"],
+   aide:"Détecteur électromagnétique, géoradar, classes A/B/C, marquage-piquetage (NF P98-332), compte rendu."},
+  {a:"AUT",pole:0,l:"Autre activité (observation, tâche annexe)",comp:[],aide:"Réunion de chantier, visite, rangement du matériel, accueil client…"}
+];
+const POLES = {1:"Pôle 1 · Préparation et mission foncière",2:"Pôle 2 · Topographie",3:"Pôle 3 · Détection de réseaux",0:"Autres activités"};
+const MATERIEL = ["Station totale","Station robotisée","Récepteur GNSS","Niveau numérique","Niveau optique","Scanner 3D","Drone","Détecteur électromagnétique","Géoradar","Bombe de marquage / piquets","Croquis / carnet de terrain","Logiciel de calcul topo","DAO (AutoCAD, Covadis…)","QGIS / SIG","Géofoncier / cadastre","Guichet unique DT-DICT"];
+const AUTONOMIE = [["observe","J'ai observé"],["aide","J'ai aidé"],["equipe","J'ai fait en équipe"],["seul","J'ai fait seul(e)"]];
+const SECTEURS = ["Cabinet de géomètre-expert","Entreprise de travaux publics","Entreprise du bâtiment","Société de topographie","Société de détection de réseaux","Collectivité / service technique","Bureau d'études","Autre"];
+/* Exemples d'activités : titre, activité du référentiel, compétences et matériel proposés */
+const EXEMPLES = [
+  {id:"x01",t:"Préparer le dossier d'intervention avant le terrain",a:"A1.1",c:["C01","C02"],m:["Croquis / carnet de terrain"]},
+  {id:"x02",t:"Faire une déclaration DT-DICT sur le guichet unique",a:"A1.1",c:["C01"],m:["Guichet unique DT-DICT"]},
+  {id:"x03",t:"Rechercher les informations cadastrales et sur Géofoncier",a:"A1.1",c:["C01","C04"],m:["Géofoncier / cadastre"]},
+  {id:"x04",t:"Préparer et vérifier le matériel avant de partir",a:"A1.1",c:["C02","C06"],m:[]},
+  {id:"x05",t:"Faire la synthèse des plans des concessionnaires",a:"A1.1",c:["C01"],m:["DAO (AutoCAD, Covadis…)"]},
+  {id:"x06",t:"Rechercher les bornes et repères existants avant un bornage",a:"A1.2",c:["C04","C06"],m:["Station totale","Croquis / carnet de terrain"]},
+  {id:"x07",t:"Participer à un bornage amiable",a:"A1.2",c:["C04","C05"],m:["Station totale"]},
+  {id:"x08",t:"Implanter et poser les bornes d'une division parcellaire",a:"A1.2",c:["C04","C05","C06"],m:["Station totale","Récepteur GNSS"]},
+  {id:"x09",t:"Dessiner un plan de division ou un DMPC",a:"A1.2",c:["C05"],m:["DAO (AutoCAD, Covadis…)","Géofoncier / cadastre"]},
+  {id:"x10",t:"Lever une parcelle pour un plan topographique",a:"A2.1",c:["C06","C07"],m:["Station totale","Croquis / carnet de terrain"]},
+  {id:"x11",t:"Lever une façade ou l'intérieur d'un bâtiment",a:"A2.1",c:["C06","C07"],m:["Station totale","Scanner 3D"]},
+  {id:"x12",t:"Lever au drone ou au scanner 3D",a:"A2.1",c:["C06","C07","C10"],m:["Drone","Scanner 3D"]},
+  {id:"x13",t:"Rattacher un chantier en Lambert 93 au GNSS",a:"A2.2",c:["C06","C09"],m:["Récepteur GNSS"]},
+  {id:"x14",t:"Réaliser un cheminement polygonal",a:"A2.2",c:["C07","C09","C10"],m:["Station totale","Logiciel de calcul topo"]},
+  {id:"x15",t:"Faire un nivellement direct (report d'altitude NGF)",a:"A2.2",c:["C06","C09"],m:["Niveau numérique","Niveau optique"]},
+  {id:"x16",t:"Implanter une maison individuelle (axes, angles, chaises)",a:"A2.3",c:["C06","C08"],m:["Station totale"]},
+  {id:"x17",t:"Implanter des bordures ou des réseaux (VRD)",a:"A2.3",c:["C06","C08"],m:["Station totale","Récepteur GNSS"]},
+  {id:"x18",t:"Contrôler une implantation et remplir le PV",a:"A2.3",c:["C08","C11"],m:["Station totale"]},
+  {id:"x19",t:"Récoler des réseaux en tranchée ouverte",a:"A2.4",c:["C06","C07"],m:["Récepteur GNSS","Station totale"]},
+  {id:"x20",t:"Faire un plan de récolement de fin de travaux",a:"A2.4",c:["C07","C11"],m:["DAO (AutoCAD, Covadis…)"]},
+  {id:"x21",t:"Calculer les points du levé au bureau",a:"A2.5",c:["C10"],m:["Logiciel de calcul topo"]},
+  {id:"x22",t:"Dessiner le plan topographique en DAO",a:"A2.5",c:["C10","C11"],m:["DAO (AutoCAD, Covadis…)"]},
+  {id:"x23",t:"Créer une carte ou une couche dans un SIG",a:"A2.5",c:["C10","C11"],m:["QGIS / SIG"]},
+  {id:"x24",t:"Détecter des réseaux enterrés avant travaux",a:"A3.1",c:["C06","C12"],m:["Détecteur électromagnétique","Géoradar"]},
+  {id:"x25",t:"Marquer et piqueter les réseaux au sol",a:"A3.1",c:["C13","C03"],m:["Bombe de marquage / piquets"]},
+  {id:"x26",t:"Rédiger le compte rendu de détection",a:"A3.1",c:["C14"],m:[]},
+  {id:"x27",t:"Participer à une réunion de chantier ou un rendez-vous client",a:"AUT",c:["C01","C14"],m:[]},
+  {id:"x28",t:"Trier les déchets et ranger le matériel en fin de chantier",a:"AUT",c:["C03","C06"],m:[]}
+];
+const NB_PROPOSITIONS = 5;
+const REQ_COMP = COMPETENCES.filter(c=>c.bloc!==3);           // C01 à C11 : comptées dans la réussite
+const REACTIONS = {bravo:"Bravo", bienvu:"Bien vu", adevelopper:"À développer"};
+const exOf = id => EXEMPLES.find(x=>x.id===id);
+const actOf = a => ACTIVITES.find(x=>x.a===a);
+const compOf = c => COMPETENCES.find(x=>x.c===c);
+
+/* =====================================================================
+   OUTILS
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const h = v => String(v ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id-"+Date.now().toString(36)+Math.random().toString(36).slice(2));
+const today = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+const fmtDate = s => { if(!s) return ""; const [y,m,d]=String(s).slice(0,10).split("-"); return `${d}/${m}/${y}`; };
+const daysSince = s => s ? Math.floor((Date.now()-new Date(s).getTime())/864e5) : null;
+const isImage = p => /^image\//.test(p.type||"") || /\.(jpe?g|png|webp|gif)$/i.test(p.nom||p.path||"");
+const plural = (n,a,b) => `${n} ${n>1?b:a}`;
+const norm = s => String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function genCode(){ const A="abcdefghjkmnpqrstuvwxyz23456789"; let s=""; const r=crypto.getRandomValues(new Uint32Array(8)); for(const x of r) s+=A[x%A.length]; return s; }
+function fileExt(n){ const m=/\.([a-z0-9]+)$/i.exec(n||""); return m?m[1].toUpperCase():"FICHIER"; }
+function fmtSize(b){ if(!b) return ""; return b>1048576?(b/1048576).toFixed(1)+" Mo":Math.round(b/1024)+" ko"; }
+
+let toastTimer;
+function toast(msg){ let t=$("#toast"); if(!t){ t=document.createElement("div"); t.id="toast"; t.className="toast"; t.setAttribute("role","status"); document.body.appendChild(t); } t.textContent=msg; t.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.hidden=true,3200); }
+
+function confirmBox(title, text, okLabel="Supprimer"){
+  return new Promise(res=>{
+    const o=document.createElement("div"); o.className="overlay";
+    o.innerHTML=`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgT"><h2 id="dlgT">${h(title)}</h2><p>${h(text)}</p><div class="row" style="justify-content:flex-end"><button class="btn" data-r="0">Annuler</button><button class="btn danger" data-r="1">${h(okLabel)}</button></div></div>`;
+    o.addEventListener("click",e=>{ const b=e.target.closest("[data-r]"); if(b||e.target===o){ o.remove(); res(b?.dataset.r==="1"); } });
+    document.body.appendChild(o); o.querySelector('[data-r="0"]').focus();
+  });
+}
+
+function confirmTyped(title, text, expected, okLabel="Supprimer définitivement"){
+  return new Promise(res=>{
+    const o=document.createElement("div"); o.className="overlay";
+    o.innerHTML=`<form class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgT2"><h2 id="dlgT2">${h(title)}</h2><p>${h(text)}</p>
+      <label class="f">Pour confirmer, tapez <span class="mono">${h(expected)}</span><input type="text" id="dlgIn" autocomplete="off" autocapitalize="none"></label>
+      <div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-r="0">Annuler</button><button type="submit" class="btn danger" id="dlgOk" disabled>${h(okLabel)}</button></div></form>`;
+    const close=v=>{ o.remove(); res(v); };
+    const inp=o.querySelector("#dlgIn"), ok=o.querySelector("#dlgOk");
+    inp.addEventListener("input",()=>{ ok.disabled = inp.value.trim()!==expected; });
+    o.querySelector("form").addEventListener("submit",e=>{ e.preventDefault(); if(inp.value.trim()===expected) close(true); });
+    o.addEventListener("click",e=>{ if(e.target.closest('[data-r="0"]')||e.target===o) close(false); });
+    document.body.appendChild(o); inp.focus();
+  });
+}
+
+/* Compression des photos : 1600 px max, JPEG */
+async function compressImage(file){
+  if(!/^image\/(jpeg|png|webp)/.test(file.type)) return file;
+  try{
+    const bmp = await loadImage(file);
+    const max=1600, sc=Math.min(1,max/Math.max(bmp.width,bmp.height));
+    if(sc===1 && file.size<900000) return file;
+    const cv=document.createElement("canvas"); cv.width=Math.round(bmp.width*sc); cv.height=Math.round(bmp.height*sc);
+    cv.getContext("2d").drawImage(bmp,0,0,cv.width,cv.height);
+    const blob=await new Promise(r=>cv.toBlob(r,"image/jpeg",.82));
+    if(!blob) return file;
+    return new File([blob], file.name.replace(/\.\w+$/,"")+".jpg", {type:"image/jpeg"});
+  }catch(e){ return file; }
+}
+function loadImage(src){
+  return new Promise((res,rej)=>{ const url = src instanceof Blob ? URL.createObjectURL(src) : src; const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url; });
+}
+
+/* Enregistrer un fichier (capacité "downloads" dans Claude, lien classique ailleurs) */
+async function saveFile(filename, blob){
+  try{
+    if(window.claude && typeof window.claude.use==="function"){
+      const dl = await window.claude.use("downloads");
+      if(dl){ await dl.save({filename, data:blob}); toast("Fichier enregistré"); return; }
+    }
+  }catch(e){
+    if(e && e.code==="declined") return;
+    if(e && e.code && e.code!=="unavailable" && e.code!=="not_granted"){ toast("Téléchargement impossible ici"); return; }
+  }
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+
+/* =====================================================================
+   STOCKAGE — mode démo (IndexedDB) ou Supabase
+   ===================================================================== */
+function idb(){
+  return new Promise((res,rej)=>{
+    const rq=indexedDB.open("carnet-pfmp-demo",1);
+    rq.onupgradeneeded=()=>{ const db=rq.result; ["profiles","periodes","entries","comments","files","meta"].forEach(s=>db.createObjectStore(s,{keyPath:"id"})); };
+    rq.onsuccess=()=>res(rq.result); rq.onerror=()=>rej(rq.error);
+  });
+}
+function tx(db,store,mode,fn){ return new Promise((res,rej)=>{ const t=db.transaction(store,mode); const s=t.objectStore(store); const r=fn(s); t.oncomplete=()=>res(r&&"result" in r?r.result:undefined); t.onerror=()=>rej(t.error); }); }
+
+const DemoStore = {
+  mode:"demo", db:null, mem:null, urlCache:new Map(),
+  async init(){
+    try{ this.db=await idb(); }catch(e){ this.db=null; this.mem={profiles:{},periodes:{},entries:{},comments:{},files:{},meta:{}}; }
+    const seeded = await this._get("meta","seed");
+    if(!seeded) await this._seed();
+  },
+  async _all(s){ if(!this.db) return Object.values(this.mem[s]); return tx(this.db,s,"readonly",st=>st.getAll()); },
+  async _get(s,id){ if(!this.db) return this.mem[s][id]; return tx(this.db,s,"readonly",st=>st.get(id)); },
+  async _put(s,o){ if(!this.db){ this.mem[s][o.id]=o; return; } return tx(this.db,s,"readwrite",st=>st.put(o)); },
+  async _del(s,id){ if(!this.db){ delete this.mem[s][id]; return; } return tx(this.db,s,"readwrite",st=>st.delete(id)); },
+  async _seed(){
+    await this._put("profiles",{id:"demo-prof",identifiant:"prof.demo",code:"prof1234",nom:"PROFESSEUR",prenom:"Démo",classe:"",role:"prof"});
+    await this._put("profiles",{id:"demo-eleve",identifiant:"eleve.demo",code:"eleve1234",nom:"EXEMPLE",prenom:"Élève",classe:"1GEO",role:"eleve"});
+    const pid="demo-pfmp-1";
+    await this._put("periodes",{id:pid,eleve_id:"demo-eleve",numero:1,intitule:"PFMP 1",tuteur_token:"demo-tuteur",entreprise:"Cabinet de géomètre-expert (exemple)",ville:"Rennes",secteur:SECTEURS[0],effectif:"12 salariés",tuteur:"M. Exemple",tuteur_fonction:"Technicien géomètre",date_debut:"2026-11-16",date_fin:"2026-12-11",presentation:"Exemple de présentation : cabinet de géomètre-expert spécialisé dans le foncier et la topographie (bornage, division, plans topographiques).",created_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+    await this._put("entries",{id:"demo-fiche-1",eleve_id:"demo-eleve",periode_id:pid,type:"fiche",date:"2026-11-18",titre:"Exemple · Levé topographique d'une parcelle avant division",lieu:"Cesson-Sévigné",activite:"A2.1",competences:["C06","C07"],operation:"Plan topographique avant division de parcelle pour un particulier",taches:"Reconnaissance du site, mise en station de la station totale sur deux points connus, levé des limites apparentes, du bâti et des arbres, croquis de levé.",materiel:["Station totale","Croquis / carnet de terrain"],materiel_autre:"",securite:"Gilet haute visibilité, chaussures de sécurité, cônes au bord de la voie.",reussites:"La codification des points a été bien faite.",difficultes:"Un point de station était masqué par une haie : nous avons dû faire une station libre.",appris:"La méthode de la station libre.",autonomie:"equipe",contenu:"",pieces:[],created_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+    await this._put("meta",{id:"seed",at:Date.now()});
+  },
+  async session(){ const id=sessionStorageGet("demo-user"); if(!id) return null; return (await this._get("profiles",id))||null; },
+  async login(ident,code){
+    const p=(await this._all("profiles")).find(x=>x.identifiant===ident.trim().toLowerCase());
+    if(!p || p.code!==code.trim()) throw new Error("Identifiant ou code incorrect.");
+    sessionStorageSet("demo-user",p.id); return p;
+  },
+  async loginAs(id){ sessionStorageSet("demo-user",id); return this._get("profiles",id); },
+  async logout(){ sessionStorageSet("demo-user",""); },
+  async listPeriodes(eid){ return (await this._all("periodes")).filter(p=>!eid||p.eleve_id===eid).sort((a,b)=>(a.numero||9)-(b.numero||9)); },
+  async updatePresentation(p){ const o=await this._get("periodes",p.id); Object.assign(o,{secteur:p.secteur,effectif:p.effectif,presentation:p.presentation,updated_at:new Date().toISOString()}); await this._put("periodes",o); return o; },
+  async savePeriode(p){ p.updated_at=new Date().toISOString(); if(!p.id){p.id=uid();p.created_at=p.updated_at;} if(!p.tuteur_token) p.tuteur_token=uid(); await this._put("periodes",p); return p; },
+  async deletePeriode(p){ await this._del("periodes",p.id); for(const e of await this._all("entries")) if(e.periode_id===p.id){ e.periode_id=null; await this._put("entries",e);} },
+  async listEntries(eid){ return (await this._all("entries")).filter(e=>!eid||e.eleve_id===eid).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.created_at||"").localeCompare(a.created_at||"")); },
+  async saveEntry(e){ e.updated_at=new Date().toISOString(); if(!e.id){e.id=uid();e.created_at=e.updated_at;} await this._put("entries",e); return e; },
+  async deleteEntry(e){ for(const p of e.pieces||[]) await this.deleteFile(p.path); await this._del("entries",e.id); for(const c of await this._all("comments")) if(c.entry_id===e.id) await this._del("comments",c.id); },
+  async uploadFile(eid,file){ const path=`${eid}/${uid()}-${norm(file.name.replace(/\.\w+$/,""))}.${fileExt(file.name).toLowerCase()}`; await this._put("files",{id:path,blob:file}); return path; },
+  async fileUrl(path){ if(this.urlCache.has(path)) return this.urlCache.get(path); const f=await this._get("files",path); if(!f) return null; const u=URL.createObjectURL(f.blob); this.urlCache.set(path,u); return u; },
+  async fileBlob(path){ const f=await this._get("files",path); return f?f.blob:null; },
+  async deleteFile(path){ await this._del("files",path); },
+  async listStudents(){ return (await this._all("profiles")).filter(p=>p.role==="eleve").sort((a,b)=>(a.classe+a.nom).localeCompare(b.classe+b.nom)); },
+  async createStudent({nom,prenom,classe}){
+    const all=await this._all("profiles"); let base=norm(prenom)+"."+norm(nom); base=base.replace(/-/g,""); let ident=base,i=2;
+    while(all.some(p=>p.identifiant===ident)) ident=base+(i++);
+    const code=genCode(); await this._put("profiles",{id:uid(),identifiant:ident,code,nom:nom.toUpperCase(),prenom,classe,role:"eleve"});
+    return {identifiant:ident,code};
+  },
+  async deleteStudent(p){ for(const e of await this.listEntries(p.id)) await this.deleteEntry(e); for(const pe of await this.listPeriodes(p.id)) await this._del("periodes",pe.id); await this._del("profiles",p.id); },
+  async deleteStudents(list,onProg){ let i=0; for(const p of list){ onProg?.(++i,list.length,p); await this.deleteStudent(p); } return i; },
+  async listComments(entryIds){ const set=new Set(entryIds); return (await this._all("comments")).filter(c=>set.has(c.entry_id)).sort((a,b)=>a.created_at.localeCompare(b.created_at)); },
+  async addComment(entry_id,texte,me,reaction=null){ const c={id:uid(),entry_id,auteur_id:me.id,auteur_type:"prof",auteur_nom:`${me.prenom} ${me.nom}`,reaction,texte,created_at:new Date().toISOString()}; await this._put("comments",c); return c; },
+  async renewToken(p){ const o=await this._get("periodes",p.id); o.tuteur_token=uid(); await this._put("periodes",o); return o; },
+  async _perByToken(t){ const all=await this._all("periodes"); let p=all.find(x=>x.tuteur_token===t); if(!p&&t==="demo-tuteur") p=all.find(x=>x.eleve_id==="demo-eleve"); return p; },
+  async tuteurView(t){ const p=await this._perByToken(t); if(!p) throw new Error("Ce lien n'est plus valable. Demandez-en un nouveau à l'élève ou à son professeur.");
+    const el=await this._get("profiles",p.eleve_id); const ents=(await this._all("entries")).filter(e=>e.eleve_id===p.eleve_id&&(e.periode_id===p.id||!e.periode_id)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+    const coms=(await this.listComments(ents.map(e=>e.id))).filter(c=>c.auteur_type==="tuteur");
+    return {eleve:{prenom:el?.prenom||"",nom:(el?.nom||"").slice(0,1)+"."},periode:{numero:p.numero,entreprise:p.entreprise,tuteur:p.tuteur,date_debut:p.date_debut,date_fin:p.date_fin},
+      entries:ents.map(e=>({id:e.id,type:e.type,date:e.date,titre:e.titre,lieu:e.lieu,activite:e.activite,competences:e.competences,operation:e.operation,taches:e.taches,reussites:e.reussites,difficultes:e.difficultes,appris:e.appris,contenu:e.contenu,nb_photos:(e.pieces||[]).filter(isImage).length})),comments:coms}; },
+  async tuteurReact(t,entry_id,reaction,texte){ const p=await this._perByToken(t); if(!p) throw new Error("Lien non valable.");
+    const c={id:uid(),entry_id,auteur_id:null,auteur_type:"tuteur",auteur_nom:p.tuteur||"",reaction:reaction||null,texte:texte||"",created_at:new Date().toISOString()}; await this._put("comments",c); return c; },
+  async deleteComment(c){ await this._del("comments",c.id); }
+};
+/* Ordre personnalisé : le dernier choix de l'élève passe en tête */
+function recentKey(kind){ return `recent-${kind}-${S.me?.id||"x"}`; }
+function getRecent(kind){ try{ return JSON.parse(sessionStorageGet(recentKey(kind))||"[]"); }catch(e){ return []; } }
+function pushRecent(kind,ids){ const cur=getRecent(kind).filter(x=>!ids.includes(x)); sessionStorageSet(recentKey(kind),JSON.stringify([...ids,...cur].slice(0,40))); }
+function orderedExamples(){
+  const rec=getRecent("ex");
+  // ensuite : activités déjà utilisées dans les fiches de l'élève (les plus récentes d'abord)
+  const usedActs=[]; S.entries.filter(e=>e.type==="fiche").forEach(e=>{ if(e.activite && !usedActs.includes(e.activite)) usedActs.push(e.activite); });
+  const score=x=>{ const r=rec.indexOf(x.id); if(r>=0) return r; const u=usedActs.indexOf(x.a); return u>=0?100+u:1000; };
+  return EXEMPLES.map((x,i)=>({x,i})).sort((p,q)=>score(p.x)-score(q.x)||p.i-q.i).map(p=>p.x);
+}
+function orderedMateriel(){
+  const rec=getRecent("mat"); const cnt={};
+  S.entries.forEach(e=>(e.materiel||[]).forEach(m=>cnt[m]=(cnt[m]||0)+1));
+  const score=m=>{ const r=rec.indexOf(m); return r>=0?r:100-(cnt[m]||0); };
+  return MATERIEL.map((m,i)=>({m,i})).sort((p,q)=>score(p.m)-score(q.m)||p.i-q.i).map(p=>p.m);
+}
+function sessionStorageGet(k){ try{ return localStorage.getItem("carnet-"+k); }catch(e){ return window["_k"+k]||null; } }
+function sessionStorageSet(k,v){ try{ v?localStorage.setItem("carnet-"+k,v):localStorage.removeItem("carnet-"+k); }catch(e){ window["_k"+k]=v; } }
+
+const SupaStore = {
+  mode:"supabase", sb:null, urlCache:new Map(),
+  async init(){
+    await new Promise((res,rej)=>{ const s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"; s.onload=res; s.onerror=()=>rej(new Error("Impossible de charger Supabase")); document.head.appendChild(s); });
+    this.sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  },
+  _chk({data,error}){ if(error) throw new Error(error.message); return data; },
+  email(ident){ return `${ident.trim().toLowerCase()}@${CONFIG.EMAIL_DOMAIN}`; },
+  async me(){ const {data:{user}}=await this.sb.auth.getUser(); if(!user) return null; const p=this._chk(await this.sb.from("pfmp_profiles").select("*").eq("id",user.id).maybeSingle()); return p; },
+  async session(){ const {data}=await this.sb.auth.getSession(); if(!data.session) return null; return this.me(); },
+  async login(ident,code){ const {error}=await this.sb.auth.signInWithPassword({email:this.email(ident),password:code.trim()}); if(error) throw new Error("Identifiant ou code incorrect."); const p=await this.me(); if(!p) throw new Error("Compte sans profil : prévenez votre professeur."); return p; },
+  async logout(){ await this.sb.auth.signOut(); },
+  async listPeriodes(eid){ let q=this.sb.from("pfmp_periodes").select("*").order("numero",{ascending:true,nullsFirst:false}); if(eid) q=q.eq("eleve_id",eid); return this._chk(await q); },
+  async savePeriode(p){ const row={...p,updated_at:new Date().toISOString()}; if(!row.id) delete row.id; return this._chk(await this.sb.from("pfmp_periodes").upsert(row).select().single()); },
+  async deletePeriode(p){ this._chk(await this.sb.from("pfmp_periodes").delete().eq("id",p.id)); },
+  async updatePresentation(p){ return this._chk(await this.sb.from("pfmp_periodes").update({secteur:p.secteur,effectif:p.effectif,presentation:p.presentation,updated_at:new Date().toISOString()}).eq("id",p.id).select().single()); },
+  async listEntries(eid){ let q=this.sb.from("pfmp_entries").select("*").order("date",{ascending:false}).order("created_at",{ascending:false}); if(eid) q=q.eq("eleve_id",eid); return this._chk(await q); },
+  async saveEntry(e){ const row={...e,updated_at:new Date().toISOString()}; if(!row.id) delete row.id; delete row.created_at; return this._chk(await this.sb.from("pfmp_entries").upsert(row).select().single()); },
+  async deleteEntry(e){ const paths=(e.pieces||[]).map(p=>p.path); if(paths.length) await this.sb.storage.from(CONFIG.BUCKET).remove(paths); this._chk(await this.sb.from("pfmp_entries").delete().eq("id",e.id)); },
+  async uploadFile(eid,file){ const path=`${eid}/${uid()}-${norm(file.name.replace(/\.\w+$/,""))}.${fileExt(file.name).toLowerCase()}`; const {error}=await this.sb.storage.from(CONFIG.BUCKET).upload(path,file,{contentType:file.type||"application/octet-stream",upsert:false}); if(error) throw new Error("Envoi du fichier impossible : "+error.message); return path; },
+  async fileUrl(path){ const c=this.urlCache.get(path); if(c && c.exp>Date.now()) return c.url; const {data,error}=await this.sb.storage.from(CONFIG.BUCKET).createSignedUrl(path,3600); if(error) return null; this.urlCache.set(path,{url:data.signedUrl,exp:Date.now()+3500e3}); return data.signedUrl; },
+  async fileBlob(path){ const {data,error}=await this.sb.storage.from(CONFIG.BUCKET).download(path); return error?null:data; },
+  async deleteFile(path){ await this.sb.storage.from(CONFIG.BUCKET).remove([path]); },
+  async listStudents(){ return this._chk(await this.sb.from("pfmp_profiles").select("*").eq("role","eleve").order("classe").order("nom")); },
+  async createStudent({nom,prenom,classe}){
+    const existing=(await this.listStudents()).map(p=>p.identifiant);
+    let base=(norm(prenom)+"."+norm(nom)).replace(/-/g,""), ident=base, i=2; while(existing.includes(ident)) ident=base+(i++);
+    const code=genCode();
+    const tmp=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:"pfmp-tmp"}});
+    const {data,error}=await tmp.auth.signUp({email:this.email(ident),password:code,options:{data:{identifiant:ident,nom:nom.toUpperCase(),prenom,classe}}});
+    if(error) throw new Error(`${prenom} ${nom} : ${error.message}`);
+    if(!data.session) throw new Error("Désactivez « Confirm email » dans Supabase (Authentication > Providers > Email), puis recommencez.");
+    await tmp.auth.signOut();
+    return {identifiant:ident,code};
+  },
+  async deleteStudent(p){ return this.deleteStudents([p]); },
+  async _purgeFolder(id){
+    const b=this.sb.storage.from(CONFIG.BUCKET);
+    for(let k=0;k<20;k++){ const {data,error}=await b.list(id,{limit:1000}); if(error||!data||!data.length) return; const {error:e2}=await b.remove(data.map(f=>`${id}/${f.name}`)); if(e2) throw new Error("Suppression des photos impossible : "+e2.message); }
+  },
+  async deleteStudents(list,onProg){
+    let i=0;
+    for(const p of list){ onProg?.(++i,list.length,p); await this._purgeFolder(p.id); }
+    const ids=list.map(p=>p.id);
+    for(let k=0;k<ids.length;k+=50){ this._chk(await this.sb.rpc("pfmp_delete_eleves",{ids:ids.slice(k,k+50)})); }
+    return list.length;
+  },
+  async listComments(ids){ if(!ids.length) return []; return this._chk(await this.sb.from("pfmp_comments").select("*").in("entry_id",ids).order("created_at")); },
+  async addComment(entry_id,texte,me,reaction=null){ return this._chk(await this.sb.from("pfmp_comments").insert({entry_id,texte,auteur_id:me.id,auteur_type:"prof",auteur_nom:`${me.prenom} ${me.nom}`,reaction}).select().single()); },
+  async renewToken(p){ return this._chk(await this.sb.from("pfmp_periodes").update({tuteur_token:uid()}).eq("id",p.id).select().single()); },
+  async tuteurView(t){ const {data,error}=await this.sb.rpc("pfmp_tuteur_view",{t}); if(error||!data) throw new Error("Ce lien n'est plus valable. Demandez-en un nouveau à l'élève ou à son professeur."); return data; },
+  async tuteurReact(t,entry_id,reaction,texte){ return this._chk(await this.sb.rpc("pfmp_tuteur_react",{t,e:entry_id,r:reaction||null,txt:texte||""})); },
+  async deleteComment(c){ this._chk(await this.sb.from("pfmp_comments").delete().eq("id",c.id)); }
+};
+
+const Store = (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY) ? SupaStore : DemoStore;
+
+/* =====================================================================
+   ÉTAT ET NAVIGATION
+   ===================================================================== */
+const S = { pf:{}, me:null, periodes:[], entries:[], comments:[], students:[], allEntries:[], allPeriodes:[], view:"home", p:{}, draft:null, filter:"all", classe:"" };
+
+async function loadStudentData(eid){
+  const [periodes,entries]=await Promise.all([Store.listPeriodes(eid),Store.listEntries(eid)]);
+  const comments=await Store.listComments(entries.map(e=>e.id));
+  return {periodes,entries,comments};
+}
+async function refresh(){
+  if(S.me.role==="eleve"){ Object.assign(S, await loadStudentData(S.me.id)); }
+  else { const [students,allEntries,allPeriodes]=await Promise.all([Store.listStudents(),Store.listEntries(null),Store.listPeriodes(null)]); Object.assign(S,{students,allEntries,allPeriodes}); }
+}
+function go(view,p={}){ S.view=view; S.p=p; render(); window.scrollTo(0,0); }
+const deskMQ = window.matchMedia ? window.matchMedia("(min-width: 1024px)") : {matches:false,addEventListener(){}};
+const isDesk = () => !!(S.me && S.me.role==="prof" && deskMQ.matches);
+try{ deskMQ.addEventListener("change",()=>{ if(S.me) render(); }); }catch(e){}
+
+const ICONS = {
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>',
+  add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  dossier:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v10H3z"/></svg>',
+  pfmp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.7 3.1 2.4 3.5 5.2"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  key:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/></svg>'
+};
+function renderSide(){
+  const side=$("#side"); document.body.classList.toggle("desk",isDesk());
+  if(!isDesk()){ side.innerHTML=""; return; }
+  const classes=[...new Set(S.students.map(s=>s.classe).filter(Boolean))].sort();
+  const v=S.view; const on=k=>(k===v||(k==="home"&&["student","entry","report"].includes(v)))?" on":"";
+  side.innerHTML=`<span class="lbl">Espace professeur</span>
+    <button class="side-link${on("home")}" data-go="home"${on("home")?' aria-current="page"':""}>${ICONS.users}Suivi de la classe<span class="count">${S.students.length}</span></button>
+    <button class="side-link${on("periodes")}" data-go="periodes"${on("periodes")?' aria-current="page"':""}>${ICONS.cal}Périodes PFMP</button>
+    <button class="side-link${on("accounts")}" data-go="accounts"${on("accounts")?' aria-current="page"':""}>${ICONS.key}Comptes et classes</button>
+    ${classes.length?`<span class="lbl">Classes</span>${["",...classes].map(c=>`<button class="side-link${S.classe===c&&v==="home"?" on":""}" data-setcls="${h(c)}">${c?h(c):"Toutes les classes"}<span class="count">${S.students.filter(s=>!c||s.classe===c).length}</span></button>`).join("")}`:""}`;
+}
+function renderTabs(){
+  const tb=$("#tabbar");
+  if(!S.me || S.me.role!=="eleve"){ tb.hidden=true; $("#view").classList.add("no-tabs"); return; }
+  tb.hidden=false; $("#view").classList.remove("no-tabs");
+  const v=S.view, on=k=>(k===v||(k==="dossier"&&["entry","report"].includes(v))||(k==="add"&&["fiche","journal"].includes(v)))?" on":"";
+  const cur=k=>on(k)?' aria-current="page"':"";
+  $("#tabs").innerHTML=`
+    <button class="tab${on("home")}" data-go="home"${cur("home")}><span class="ico">${ICONS.home}</span>Accueil</button>
+    <button class="tab add${on("add")}" data-go="add"${cur("add")}><span class="plus">${ICONS.add}</span>Ajouter</button>
+    <button class="tab${on("dossier")}" data-go="dossier"${cur("dossier")}><span class="ico">${ICONS.dossier}</span>${totalNew()?'<span class="dot" aria-label="nouveaux retours"></span>':""}Mon dossier</button>
+    <button class="tab${on("pfmp")}" data-go="pfmp"${cur("pfmp")}><span class="ico">${ICONS.pfmp}</span>Mon stage</button>`;
+}
+function renderHeader(){
+  $("#who").textContent = S.me ? `${S.me.prenom} ${S.me.nom}${S.me.classe?" · "+S.me.classe:""}` : "";
+  $("#logoutBtn").hidden = !S.me && !(S.tutor && Store.mode==="demo");
+  $("#demoBand").hidden = Store.mode!=="demo";
+}
+
+function render(){
+  renderHeader(); renderTabs(); renderSide();
+  const V=$("#view");
+  if(S.tutor){ V.innerHTML=viewTutor(); afterRender.tutor(); return; }
+  if(!S.me){ V.innerHTML=viewLogin(); return bindLogin(); }
+  const views = S.me.role==="eleve"
+    ? {home:viewHome,add:viewAdd,fiche:viewFicheForm,journal:viewJournalForm,dossier:viewDossier,entry:viewEntry,pfmp:viewPfmp,pfmpForm:viewPfmpForm,report:viewReport}
+    : {home:viewDashboard,student:viewStudent,entry:viewEntry,report:viewReport,accounts:viewAccounts,periodes:viewPeriodes};
+  const fn = views[S.view] || views.home;
+  V.innerHTML = fn();
+  hydrateThumbs(V);
+  afterRender[S.view]?.();
+}
+const afterRender = {};
+
+/* vignettes : chargées après le rendu */
+async function hydrateThumbs(root){
+  for(const el of root.querySelectorAll("[data-thumb]")){
+    const url=await Store.fileUrl(el.dataset.thumb);
+    if(url){ const img=new Image(); img.alt=el.dataset.alt||""; img.loading="lazy"; img.src=url; el.textContent=""; el.appendChild(img); }
+  }
+}
+
+/* =====================================================================
+   CONNEXION
+   ===================================================================== */
+function viewLogin(){
+  return `<div class="login stack">
+    <img class="login-logo" src="icons/logo-horizontal.svg" width="260" height="68" alt="Ma PFMP">
+    <section class="hero"><div class="head"><span class="kicker">${h(CONFIG.DIPLOME)} · ${h(CONFIG.LYCEE_COURT)}</span><h1>Ma PFMP</h1>
+      <span class="sub lead">Déposez vos photos et vos activités pendant le stage. À la fin, l'appli prépare la trame de votre rapport.</span></div></section>
+    <form class="card" id="loginForm" novalidate>
+      <label class="f">Identifiant<input type="text" id="lgId" autocomplete="username" autocapitalize="none" placeholder="prenom.nom" required></label>
+      <label class="f">Code<input type="password" id="lgCode" autocomplete="current-password" required></label>
+      <p class="small" id="lgErr" style="color:var(--mark)" hidden></p>
+      <button class="btn primary block" type="submit" id="lgBtn">Me connecter</button>
+      <p class="small muted">Code oublié ? Demandez-le à votre professeur.</p>
+    </form>
+    ${Store.mode==="demo"?`<div class="card"><h3>Essayer la démonstration</h3><div class="big-actions">
+      <button class="big-action" data-demo="demo-eleve"><b>Côté élève</b><span>Ajouter une fiche, des photos, préparer le rapport</span></button>
+      <button class="big-action" data-demo="demo-prof"><b>Côté professeur</b><span>Suivi de la classe, comptes, commentaires</span></button>
+      <button class="big-action" data-demotut style="grid-column:1/-1;min-height:0"><b>Côté tuteur</b><span>Le lien envoyé au tuteur : il réagit sans créer de compte</span></button></div></div>`:""}
+  </div>`;
+}
+function bindLogin(){
+  $("#loginForm").addEventListener("submit",async e=>{
+    e.preventDefault(); const err=$("#lgErr"); err.hidden=true; const b=$("#lgBtn"); b.disabled=true;
+    try{ S.me=await Store.login($("#lgId").value,$("#lgCode").value); await refresh(); go("home"); }
+    catch(x){ err.textContent=x.message; err.hidden=false; } finally{ b.disabled=false; }
+  });
+  document.querySelectorAll("[data-demo]").forEach(b=>b.addEventListener("click",async()=>{ S.me=await Store.loginAs(b.dataset.demo); await refresh(); go("home"); }));
+  $("[data-demotut]")?.addEventListener("click",()=>openTutor("demo-tuteur"));
+}
+
+/* =====================================================================
+   ESPACE TUTEUR (lien sans compte)
+   ===================================================================== */
+function viewTutor(){
+  const T=S.tutor; if(T.error) return `<div class="card"><h2>Lien non valable</h2><p>${h(T.error)}</p></div>`;
+  if(!T.data) return `<p class="muted">Chargement…</p>`;
+  const d=T.data, p=d.periode, ents=d.entries||[], coms=d.comments||[];
+  return `<div class="stack">
+    <section class="hero"><div class="head"><span class="kicker">Espace tuteur · ${h(CONFIG.DIPLOME)}</span><h1>Les activités de ${h(d.eleve.prenom)} ${h(d.eleve.nom)}</h1>
+      <span class="sub">PFMP ${h(p.numero||"")}${p.entreprise?" · "+h(p.entreprise):""}</span></div>
+      <div class="in"><p>Bonjour${p.tuteur?" "+h(p.tuteur):""}. Voici les fiches que votre stagiaire a déposées. Un geste suffit pour l'encourager ou lui signaler un point à approfondir : il verra votre retour dans son application.</p>
+      <p class="small muted">Aucun compte n'est nécessaire. Les photos restent visibles uniquement par l'élève et son professeur.</p></div></section>
+    ${ents.length?ents.map(e=>{ const a=actOf(e.activite); const mine=coms.filter(c=>c.entry_id===e.id); const kv=(k,v)=>v?`<dt>${k}</dt><dd>${h(v)}</dd>`:"";
+      return `<div class="card tut-entry"><div><span class="eyebrow">${fmtDate(e.date)}${e.lieu?" · "+h(e.lieu):""}${a&&a.a!=="AUT"?" · "+a.a:""}</span><h3>${h(e.titre||(e.type==="journal"?"Note de journal":"Activité"))}</h3></div>
+        ${e.type==="journal"?`<p class="block-text">${h(e.contenu||"")}</p>`:`<dl class="kv">${kv("Contexte",e.operation)}${kv("Ce qu'il ou elle a fait",e.taches)}${kv("Réussites",e.reussites)}${kv("Difficultés",e.difficultes)}${kv("Ce qu'il ou elle a appris",e.appris)}</dl>`}
+        ${e.nb_photos?`<p class="small muted">${plural(e.nb_photos,"photo jointe","photos jointes")}</p>`:""}
+        ${mine.map(c=>commentHTML(c,false)).join("")}
+        <div class="reacts">${Object.entries(REACTIONS).map(([k,l])=>`<button type="button" class="rx-btn" data-treact="${k}" data-eid="${e.id}">${l}</button>`).join("")}</div>
+        <details class="more"><summary>Ajouter un mot</summary><form class="stack tut-form" data-eid="${e.id}" style="gap:8px;margin-top:8px"><textarea rows="3" aria-label="Votre message" maxlength="1000" placeholder="Un conseil, une précision sur la méthode…"></textarea><button class="btn primary" type="submit">Envoyer</button></form></details>
+      </div>`; }).join(""):`<div class="card"><p>L'élève n'a pas encore déposé de fiche pour cette PFMP.</p></div>`}
+  </div>`;
+}
+afterRender.tutor=()=>{
+  const send=async(eid,reaction,texte,btn)=>{ if(btn) btn.disabled=true;
+    try{ const c=await Store.tuteurReact(S.tutor.token,eid,reaction,texte); S.tutor.data.comments.push(c); toast("Merci, votre retour a été envoyé"); render(); }catch(x){ toast(x.message||"Envoi impossible"); if(btn) btn.disabled=false; } };
+  document.querySelectorAll("[data-treact]").forEach(b=>b.addEventListener("click",()=>send(b.dataset.eid,b.dataset.treact,"",b)));
+  document.querySelectorAll(".tut-form").forEach(f=>f.addEventListener("submit",ev=>{ ev.preventDefault(); const t=f.querySelector("textarea").value.trim(); if(!t) return; send(f.dataset.eid,null,t,f.querySelector("button")); }));
+};
+async function openTutor(token){
+  S.tutor={token}; S.me=null; render();
+  try{ S.tutor.data=await Store.tuteurView(token); }catch(x){ S.tutor.error=x.message; }
+  render();
+}
+
+/* =====================================================================
+   ÉLÈVE — ACCUEIL
+   ===================================================================== */
+function compCounts(entries){ const n={}; COMPETENCES.forEach(c=>n[c.c]=0); entries.forEach(e=>(e.competences||[]).forEach(c=>{ if(c in n) n[c]++; })); return n; }
+function bornesHTML(entries){
+  const n=compCounts(entries);
+  return `<div class="bornes">${[1,2,3].map(b=>{ const list=COMPETENCES.filter(c=>c.bloc===b); const done=list.filter(c=>n[c.c]>0).length;
+    return `<div class="stack" style="gap:6px"><div class="bloc-head"><span><b>${h(BLOCS[b].t)}</b> · ${BLOCS[b].u}${b===3?" · bonus, selon l'entreprise":""}</span><span>${done}/${list.length}</span></div>
+    <div class="borne-row">${list.map(c=>`<div class="borne${n[c.c]?" on":""}" title="${h(c.l)}"><span class="c">${c.c}</span><span class="n">${n[c.c]}</span><span class="l">${h(c.l)}</span></div>`).join("")}</div></div>`; }).join("")}</div>`;
+}
+/* ---------- Jauge « Mon rapport est prêt à X % » (le pôle 3 est un bonus) ---------- */
+function fullAnalysis(e){ return !!((e.reussites||e.difficultes) && e.appris && e.taches); }
+function reportReadiness(entries, periodes){
+  const fiches=entries.filter(e=>e.type==="fiche"); const nF=fiches.length;
+  const pole=n=>fiches.filter(e=>actOf(e.activite)?.pole===n).length;
+  const cnt=compCounts(fiches); const reqDone=REQ_COMP.filter(c=>cnt[c.c]>0); const reqMiss=REQ_COMP.filter(c=>!cnt[c.c]);
+  const photos=entries.flatMap(e=>(e.pieces||[]).filter(isImage)); const capt=photos.filter(p=>(p.legende||"").trim()).length; const nocap=photos.length-capt;
+  const full=fiches.filter(fullAnalysis).length;
+  const pres=(periodes||[]).some(p=>(p.presentation||"").trim().length>=200);
+  const items=[
+    {w:15,f:pres?1:0, todo:(periodes||[]).length?"Rédige la présentation de ton entreprise (onglet Mon stage, au moins quelques lignes).":"Ta présentation d'entreprise sera possible dès que ton professeur aura saisi ta PFMP.", ok:"Présentation de l'entreprise rédigée"},
+    {w:20,f:Math.min(nF/6,1), todo:`Encore ${plural(Math.max(6-nF,0),"fiche activité","fiches activité")} (objectif : 6).`, ok:"6 fiches activité ou plus"},
+    {w:10,f:pole(1)?1:0, todo:"Ajoute une activité du pôle 1 : préparation d'intervention ou mission foncière.", ok:"Une activité du pôle 1"},
+    {w:10,f:Math.min(pole(2)/2,1), todo:`Ajoute ${pole(2)?"encore une activité":"deux activités"} du pôle 2 : levé, implantation, géoréférencement, traitement.`, ok:"Deux activités du pôle 2"},
+    {w:20,f:reqDone.length/REQ_COMP.length, todo:`Compétences pas encore rencontrées : ${reqMiss.map(c=>c.c).join(", ")}.`, ok:"Les 11 compétences C01 à C11 rencontrées"},
+    {w:15,f:nF?full/nF:0, todo:nF?`Complète l'analyse (réussites ou difficultés, ce que tu as appris) de ${plural(nF-full,"fiche","fiches")}.`:"Remplis l'analyse de tes fiches : réussites, difficultés, ce que tu as appris.", ok:"Analyse complète dans toutes les fiches"},
+    {w:10,f:nocap?Math.min(capt/5,1)*0.5:Math.min(capt/5,1), todo:nocap?`Ajoute une légende à ${plural(nocap,"photo","photos")}.`:`Ajoute ${plural(Math.max(5-capt,0),"photo légendée","photos légendées")} (objectif : 5).`, ok:"Au moins 5 photos, toutes légendées"}
+  ];
+  const pct=Math.round(items.reduce((s,i)=>s+i.w*i.f,0));
+  const todos=items.filter(i=>i.f<1).sort((a,b)=>b.w*(1-b.f)-a.w*(1-a.f));
+  const bonus=pole(3)>0;
+  return {pct,todos,done:items.filter(i=>i.f>=1),bonus,reqDone:reqDone.length,cnt,nF,capt,full};
+}
+function gaugeHTML(entries, periodes, opts={}){
+  const r=reportReadiness(entries,periodes); const n=opts.max??3;
+  return `<div class="gauge"><div class="gauge-top"><div class="gauge-ring" style="--p:${r.pct}" role="img" aria-label="Rapport prêt à ${r.pct} %"><span>${r.pct}%</span></div>
+    <div><h2>${opts.title||"Mon rapport est prêt à "+r.pct+" %"}</h2><p class="small muted">${r.pct>=100?"Tout y est : il reste à rédiger l'introduction et la conclusion.":"Ce qu'il reste à faire en priorité :"}</p></div></div>
+    <ul class="todo">${r.todos.slice(0,n).map(t=>`<li>${h(t.todo)}</li>`).join("")}
+    <li class="bonus${r.bonus?" done":""}">${r.bonus?"Bonus obtenu : activité de détection de réseaux.":"Bonus, si ton entreprise en fait : une activité de détection de réseaux (pôle 3)."}</li></ul></div>`;
+}
+
+/* ---------- Cheminement des compétences (C01 à C11 fermé, C12 à C14 en antenne bonus) ---------- */
+const CHEM_PTS={C01:[44,150],C02:[30,98],C03:[58,50],C04:[110,26],C05:[162,40],C06:[212,22],C07:[260,44],C08:[284,98],C09:[262,150],C10:[202,176],C11:[122,178],C12:[322,72],C13:[350,104],C14:[336,148]};
+function cheminementHTML(entries){
+  const cnt=compCounts(entries.filter(e=>e.type==="fiche")); const on=c=>cnt[c]>0;
+  const loop=REQ_COMP.map(c=>c.c); const ant=["C08","C12","C13","C14"];
+  const seg=(a,b,bonus)=>{ const [x1,y1]=CHEM_PTS[a],[x2,y2]=CHEM_PTS[b]; return `<line class="seg${on(a)&&on(b)?" on":""}${bonus?" bonus":""}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`; };
+  let lines=""; loop.forEach((c,i)=>lines+=seg(c,loop[(i+1)%loop.length]));
+  for(let i=0;i<ant.length-1;i++) lines+=seg(ant[i],ant[i+1],true);
+  const st=COMPETENCES.map(c=>{ const [x,y]=CHEM_PTS[c.c]; return `<g class="st${on(c.c)?" on":""}${c.bloc===3?" bonus":""}"><title>${h(c.c+" · "+c.l+(c.bloc===3?" (bonus)":"")+" : "+plural(cnt[c.c],"fiche","fiches"))}</title><circle cx="${x}" cy="${y}" r="12"/><text x="${x}" y="${y}">${c.c.slice(1)}</text></g>`; }).join("");
+  const n=REQ_COMP.filter(c=>on(c.c)).length; const closed=n===REQ_COMP.length;
+  return `<div class="chem"><svg viewBox="0 0 370 205" role="img" aria-label="Cheminement des compétences : ${n} stations sur 11">${lines}${st}
+    <text class="center-n" x="160" y="104">${closed?"Fermé !":n+" / 11"}</text><text class="center-l" x="160" y="122">${closed?"toutes les stations C01 à C11":"stations atteintes"}</text></svg>
+    <div class="chem-legend"><span><i style="background:var(--accent)"></i>compétence rencontrée</span><span><i style="background:var(--surface);border:2px solid var(--line)"></i>à rencontrer</span><span><i style="background:var(--pop)"></i>antenne bonus (réseaux)</span></div></div>`;
+}
+
+/* ---------- Badges ---------- */
+const BADGES=[
+  {id:"premiere",l:"Première fiche",d:"Déposer ta première fiche activité",t:s=>s.nF>=1},
+  {id:"leve",l:"Premier levé",d:"Un levé topographique (A2.1)",t:s=>s.act.has("A2.1")},
+  {id:"implanteur",l:"Implanteur",d:"Une implantation (A2.3)",t:s=>s.act.has("A2.3")},
+  {id:"georef",l:"Géoréférenceur",d:"Compétence C09 rencontrée",t:s=>s.cnt.C09>0},
+  {id:"foncier",l:"Œil du foncier",d:"Une mission foncière (A1.2)",t:s=>s.act.has("A1.2")},
+  {id:"dao",l:"As du traitement",d:"Un traitement des données (A2.5)",t:s=>s.act.has("A2.5")},
+  {id:"reporter",l:"Reporter de terrain",d:"10 photos légendées",t:s=>s.capt>=10},
+  {id:"regulier",l:"Régulier",d:"Des dépôts sur 5 jours différents",t:s=>s.days>=5},
+  {id:"plume",l:"Belle plume",d:"3 fiches avec l'analyse complète",t:s=>s.full>=3},
+  {id:"ferme",l:"Cheminement fermé",d:"Les 11 compétences C01 à C11",t:s=>s.reqDone===11},
+  {id:"rapport",l:"Rapport prêt",d:"La jauge du rapport à 100 %",t:s=>s.pct>=100},
+  {id:"reseaux",l:"Détective des réseaux",d:"Bonus : une détection de réseaux",t:s=>s.act.has("A3.1")||s.cnt.C12>0,bonus:true}
+];
+function badgeState(entries, periodes){
+  const r=reportReadiness(entries,periodes);
+  const s={...r, act:new Set(entries.filter(e=>e.type==="fiche").map(e=>e.activite)), days:new Set(entries.map(e=>String(e.date).slice(0,10))).size};
+  return BADGES.map(b=>({...b,on:!!b.t(s)}));
+}
+const MEDAL='<svg viewBox="0 0 40 40" aria-hidden="true"><path class="m1" d="M13 2h6l-3 12h-6zM21 2h6l3 12h-6z"/><circle class="m1" cx="20" cy="24" r="13"/><circle class="m2" cx="20" cy="24" r="9.5"/><path class="m3" d="M20 17.5l2 4.2 4.6.6-3.3 3.2.8 4.6-4.1-2.2-4.1 2.2.8-4.6-3.3-3.2 4.6-.6z"/></svg>';
+function badgesHTML(entries, periodes){
+  const list=badgeState(entries,periodes); const n=list.filter(b=>b.on&&!b.bonus).length;
+  return `<div class="section-title"><h2>Mes badges</h2><span class="small muted">${n} / ${BADGES.filter(b=>!b.bonus).length}${list.find(b=>b.bonus&&b.on)?" + bonus":""}</span></div>
+    <div class="badges">${list.map(b=>`<div class="badge${b.on?" on":""}${b.bonus?" bonus":""}" title="${h(b.d)}">${MEDAL}<span class="bl">${h(b.l)}</span><span class="bd">${h(b.d)}</span></div>`).join("")}</div>`;
+}
+function checkNewBadges(){
+  if(!S.me||S.me.role!=="eleve") return;
+  const key="badges-"+S.me.id; let seen; try{ seen=JSON.parse(sessionStorageGet(key)||"null"); }catch(e){ seen=null; }
+  const on=badgeState(S.entries,S.periodes).filter(b=>b.on);
+  if(seen){ const fresh=on.filter(b=>!seen.includes(b.id)); if(fresh.length) setTimeout(()=>toast(`Nouveau badge : ${fresh.map(b=>b.l).join(", ")}`),300); }
+  sessionStorageSet(key,JSON.stringify(on.map(b=>b.id)));
+}
+
+/* ---------- Retours non lus (élève) ---------- */
+function seenMap(){ try{ return JSON.parse(sessionStorageGet("seen-"+S.me.id)||"{}"); }catch(e){ return {}; } }
+function newCount(entryId){ if(!S.me||S.me.role!=="eleve") return 0; const m=seenMap(); const t=m[entryId]||""; return S.comments.filter(c=>c.entry_id===entryId&&(c.created_at||"")>t).length; }
+function markSeen(entryId){ const m=seenMap(); m[entryId]=new Date().toISOString(); sessionStorageSet("seen-"+S.me.id,JSON.stringify(m)); }
+function totalNew(){ return S.me?.role==="eleve" ? S.entries.reduce((n,e)=>n+newCount(e.id),0) : 0; }
+function commentHTML(c, canDelete){
+  const tut=c.auteur_type==="tuteur";
+  return `<div class="comment${tut?" tut":""}"><div class="row between"><span class="row" style="gap:6px">${c.reaction&&REACTIONS[c.reaction]?`<span class="rx rx-${c.reaction}">${REACTIONS[c.reaction]}</span>`:""}<span class="who-c">${tut?"Tuteur"+(c.auteur_nom?" · "+h(c.auteur_nom):""):"Professeur"}</span></span><span class="small muted">${fmtDate(c.created_at)}</span></div>
+    ${c.texte?`<p class="block-text">${h(c.texte)}</p>`:""}${canDelete?`<div class="row" style="justify-content:flex-end"><button class="btn small ghost" data-delcom="${c.id}">Effacer</button></div>`:""}</div>`;
+}
+function tutorLink(p){ const base=location.origin+location.pathname; return p&&p.tuteur_token?`${base}?tuteur=${p.tuteur_token}`:""; }
+function linkBoxHTML(p, renew){
+  const l=tutorLink(p); if(!l) return "";
+  return `<div class="linkbox"><code>${h(l)}</code><button type="button" class="btn small" data-copy="${h(l)}">Copier</button>${renew?`<button type="button" class="btn small ghost" data-renew="${p.id}">Nouveau lien</button>`:""}</div>`;
+}
+const perLabel = p => p ? (p.numero?`PFMP ${p.numero}`:(p.intitule||"PFMP")) : "";
+function currentPeriodeOf(list){
+  if(!list||!list.length) return null; const t=today();
+  return list.find(p=>p.date_debut&&p.date_debut<=t&&(!p.date_fin||p.date_fin>=t))
+    || list.filter(p=>p.date_debut&&p.date_debut>t).sort((a,b)=>a.date_debut.localeCompare(b.date_debut))[0]
+    || list.slice().sort((a,b)=>(b.date_debut||"").localeCompare(a.date_debut||""))[0];
+}
+function currentPeriode(){ return currentPeriodeOf(S.periodes); }
+function viewHome(){
+  const p=currentPeriode(); const fiches=S.entries.filter(e=>e.type==="fiche"); const nPh=S.entries.reduce((s,e)=>s+(e.pieces||[]).filter(isImage).length,0);
+  const newCom=totalNew();
+  const cnt=compCounts(fiches); const nComp=REQ_COMP.filter(c=>cnt[c.c]>0).length; const nBonus=COMPETENCES.filter(c=>c.bloc===3&&cnt[c.c]>0).length;
+  return `<div class="stack">
+    <section class="hero" aria-label="Accueil">
+      <div class="head"><span class="kicker">${h(CONFIG.DIPLOME)} · ${h(CONFIG.LYCEE_COURT)}${S.me.classe?" · "+h(S.me.classe):""}</span>
+        <h1>Bonjour ${h(S.me.prenom)}</h1>${p?`<span class="sub">${h(perLabel(p))} · ${h(periodeState(p))}</span>`:""}</div>
+      <div class="in">
+      ${p?`<dl class="facts">
+        <div><dt>Entreprise</dt><dd>${h(p.entreprise||"—")}</dd></div>
+        <div><dt>Lieu</dt><dd>${h(p.ville||"—")}</dd></div>
+        <div><dt>Tuteur</dt><dd>${h(p.tuteur||"—")}${p.tuteur_fonction?`<small>${h(p.tuteur_fonction)}</small>`:""}</dd></div>
+        <div><dt>Dates</dt><dd>${p.date_debut?`${fmtDate(p.date_debut)} au ${fmtDate(p.date_fin)}`:"à venir"}</dd></div></dl>`
+      :`<p class="muted">Votre professeur n'a pas encore indiqué votre période de PFMP (dates, entreprise, tuteur). Vous pouvez déjà déposer des activités.</p>`}
+      <div class="prog"><div class="lab"><span>Compétences rencontrées${nBonus?" · bonus réseaux":""}</span><b>${nComp} / ${REQ_COMP.length}</b></div><div class="bar"><i style="width:${Math.round(nComp/REQ_COMP.length*100)}%"></i></div></div>
+    </div></section>
+    <div class="big-actions">
+      <button class="big-action primary" data-go="fiche"><b>Fiche activité</b><span>Une tâche réalisée, avec photos</span></button>
+      <button class="big-action" data-go="journal"><b>Note rapide</b><span>Journal du jour, une photo</span></button>
+    </div>
+    <div class="stats"><div class="stat"><b>${fiches.length}</b><span>fiches activité</span></div><div class="stat"><b>${S.entries.length-fiches.length}</b><span>notes de journal</span></div><div class="stat"><b>${nPh}</b><span>photos</span></div></div>
+    ${newCom?`<button class="notice info" data-go="dossier" style="text-align:left;cursor:pointer;border-top:0;border-right:0;border-bottom:0;font:inherit">Tu as ${plural(newCom,"nouveau retour","nouveaux retours")} de ton professeur ou de ton tuteur. Ouvre « Mon dossier » pour les lire.</button>`:""}
+    <div class="card">${gaugeHTML(S.entries,S.periodes)}<button class="btn primary" data-go="report">Voir mon rapport</button></div>
+    <div class="card"><div class="section-title"><h2>Mon cheminement</h2><span class="small muted">compétences C01 à C11</span></div>${cheminementHTML(S.entries)}
+      <details class="more"><summary>Détail par compétence</summary><div style="margin-top:10px">${bornesHTML(fiches)}</div></details></div>
+    <div class="card">${badgesHTML(S.entries,S.periodes)}</div>
+    <div class="card"><div class="section-title"><h2>Mon calendrier</h2></div>${calendarHTML("me",S.entries,S.periodes)}</div>
+    ${S.entries.length?`<div class="stack" style="gap:8px"><div class="section-title"><h2>Derniers dépôts</h2><button class="btn small ghost" data-go="dossier">Tout voir</button></div>${S.entries.slice(0,3).map(entryCard).join("")}</div>`:""}
+  </div>`;
+}
+function periodeState(p){
+  if(!p.date_debut) return "dates à venir";
+  const t0=new Date(p.date_debut+"T00:00"), t1=p.date_fin?new Date(p.date_fin+"T23:59"):null, now=new Date();
+  if(now<t0){ const j=Math.ceil((t0-now)/864e5); return `départ dans ${plural(j,"jour","jours")}`; }
+  if(t1 && now>t1) return "terminée, place au rapport";
+  const sem=Math.floor((now-t0)/(7*864e5))+1; const tot=t1?Math.ceil((t1-t0)/(7*864e5)):null; return `en stage, semaine ${sem}${tot?" sur "+tot:""}`;
+}
+const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+function calState(key, periodes){
+  S.cal ||= {};
+  if(!S.cal[key]){ const p=currentPeriodeOf(periodes); const t=today(); let ym=t.slice(0,7);
+    if(p && p.date_debut && t<p.date_debut && p.date_debut.slice(0,7)!==ym && (new Date(p.date_debut)-new Date(t))<40*864e5) ym=p.date_debut.slice(0,7);
+    S.cal[key]={ym, sel:null}; }
+  return S.cal[key];
+}
+function calendarHTML(key, entries, periodes){
+  const st=calState(key,periodes); const [Y,M]=st.ym.split("-").map(Number);
+  const first=new Date(Y,M-1,1), nDays=new Date(Y,M,0).getDate(), lead=(first.getDay()+6)%7, t=today();
+  const byDay={}; entries.forEach(e=>{ const d=String(e.date||"").slice(0,10); (byDay[d] ||= []).push(e); });
+  const inStage=d=>periodes.some(p=>p.date_debut&&d>=p.date_debut&&(!p.date_fin||d<=p.date_fin));
+  let cells=""; for(let i=0;i<lead;i++) cells+=`<span class="cal-day out" aria-hidden="true"></span>`;
+  let nF=0,nN=0,nStage=0,nMiss=0;
+  for(let d=1; d<=nDays; d++){
+    const ds=`${Y}-${String(M).padStart(2,"0")}-${String(d).padStart(2,"0")}`; const dow=(lead+d-1)%7; const we=dow>=5;
+    const list=byDay[ds]||[]; const f=list.filter(e=>e.type==="fiche").length, n=list.length-f; nF+=f; nN+=n;
+    const stage=inStage(ds)&&!we; if(stage) nStage++; const miss=stage&&ds<t&&!list.length; if(miss) nMiss++;
+    const lab=`${d} ${MOIS[M-1]}${f?`, ${plural(f,"fiche","fiches")}`:""}${n?`, ${plural(n,"note","notes")}`:""}${stage?", jour de stage":""}${miss?", sans dépôt":""}`;
+    cells+=`<button type="button" class="cal-day${we?" we":""}${stage?" stage":""}${miss?" miss":""}${ds===t?" today":""}${ds===st.sel?" sel":""}" data-calday="${ds}" data-calkey="${key}" aria-label="${h(lab)}"${ds===st.sel?' aria-pressed="true"':""}>
+      <span class="n">${d}</span><span class="dots">${f?'<i class="dot-f"></i>':""}${f>1?'<i class="dot-f"></i>':""}${n?'<i class="dot-n"></i>':""}</span></button>`;
+  }
+  const selList = st.sel ? (byDay[st.sel]||[]) : null;
+  return `<div class="cal">
+    <div class="cal-head"><h3>${MOIS[M-1]} ${Y}</h3><div class="cal-nav">
+      <button type="button" class="btn small" data-calnav="-1" data-calkey="${key}" aria-label="Mois précédent">‹</button>
+      <button type="button" class="btn small" data-calnav="0" data-calkey="${key}">Aujourd'hui</button>
+      <button type="button" class="btn small" data-calnav="1" data-calkey="${key}" aria-label="Mois suivant">›</button></div></div>
+    <div class="cal-grid">${["Lu","Ma","Me","Je","Ve","Sa","Di"].map(x=>`<span class="cal-dow">${x}</span>`).join("")}${cells}</div>
+    <div class="cal-legend"><span><i class="dot-f"></i>fiche activité</span><span><i class="dot-n"></i>note de journal</span><span><i class="sq"></i>jour de stage</span><span><i style="background:var(--mark);width:6px;height:6px"></i>stage sans dépôt</span></div>
+    <p class="cal-sum">${MOIS[M-1][0].toUpperCase()+MOIS[M-1].slice(1)} : ${plural(nF,"fiche","fiches")}, ${plural(nN,"note","notes")}${nStage?` · ${plural(nStage,"jour de stage","jours de stage")}${nMiss?`, dont ${nMiss} sans dépôt`:""}`:""}</p>
+    ${selList?`<div class="cal-detail"><b>${fmtDate(st.sel)}</b>${selList.length?selList.map(entryCard).join(""):`<p class="small muted">Aucune fiche ni note ce jour-là.</p>`}</div>`:""}
+  </div>`;
+}
+function viewAdd(){
+  return `<div class="stack"><h1>Ajouter</h1>
+    <div class="card"><div class="section-title"><h3>Qu'avez-vous fait aujourd'hui ?</h3></div>
+      <div class="ex-list">${orderedExamples().slice(0,NB_PROPOSITIONS).map(x=>{ const a=actOf(x.a); return `<button type="button" class="ex" data-startex="${x.id}"><span class="ex-t">${h(x.t)}</span><span class="tags">${a&&a.a!=="AUT"?`<span class="tag act">${a.a}</span>`:""}${x.c.map(c=>`<span class="tag">${c}</span>`).join("")}</span></button>`; }).join("")}</div>
+      <p class="small muted">Les exemples choisis récemment remontent en tête. Les autres sont dans la fiche activité.</p></div>
+    <button class="big-action primary" data-go="fiche"><b>Fiche activité</b><span>Ce que j'ai fait, avec quel matériel, les compétences mobilisées et des photos. C'est la base du portfolio et du rapport.</span></button>
+    <button class="big-action" data-go="journal"><b>Note rapide</b><span>Quelques lignes et une photo prises sur le moment. Vous pourrez en faire une fiche plus tard.</span></button>
+    <div class="notice"><b>Avant de photographier :</b> pas de visage sans accord, pas de plaque d'immatriculation, pas de document client confidentiel sans l'autorisation de votre tuteur.</div></div>`;
+}
+
+/* =====================================================================
+   ÉLÈVE — FORMULAIRES
+   ===================================================================== */
+function blankEntry(type){
+  return {id:null,eleve_id:S.me.id,periode_id:currentPeriode()?.id||null,type,date:today(),titre:"",lieu:"",activite:"",competences:[],operation:"",taches:"",materiel:[],materiel_autre:"",securite:"",reussites:"",difficultes:"",appris:"",autonomie:"",contenu:"",pieces:[]};
+}
+function startDraft(type,src){
+  const e = src ? JSON.parse(JSON.stringify(src)) : blankEntry(type);
+  if(src && type==="fiche" && src.type==="journal"){ e.type="fiche"; e.taches=e.taches||e.contenu; e.contenu=""; if(/^Journal du /.test(e.titre)) e.titre=""; }
+  S.draft={entry:e, newFiles:[]};  // newFiles: {key,file,url,legende}
+}
+function periodeSelect(sel){
+  if(!S.periodes.length) return "";
+  return `<label class="f">Période de PFMP<select id="fPer">${S.periodes.map(p=>`<option value="${p.id}"${p.id===sel?" selected":""}>${h(perLabel(p))}${p.entreprise?" · "+h(p.entreprise):""}</option>`).join("")}<option value=""${!sel?" selected":""}>Hors PFMP</option></select></label>`;
+}
+function piecesEditor(){
+  const d=S.draft, e=d.entry;
+  const items=[...(e.pieces||[]).map((p,i)=>({k:"o"+i,p,thumb:isImage(p)?`data-thumb="${h(p.path)}"`:"" ,url:null})),...d.newFiles.map(n=>({k:n.key,p:{nom:n.file.name,type:n.file.type,taille:n.file.size,legende:n.legende},url:n.url}))];
+  return `<div class="stack" style="gap:10px">
+    <div class="add-zone">
+      <label for="addPhoto">Prendre une photo<small>appareil photo du téléphone</small><input type="file" id="addPhoto" accept="image/*" capture="environment"></label>
+      <label for="addFile">Ajouter des fichiers<small>galerie, PDF, DXF, CSV…</small><input type="file" id="addFile" multiple accept="image/*,.pdf,.dxf,.dwg,.csv,.txt,.xlsx,.xls,.docx,.doc,.jpg,.jpeg,.png"></label>
+    </div>
+    ${items.length?`<div class="pieces">${items.map(it=>`<div class="piece">
+      <div class="thumb" ${it.thumb}>${it.url?`<img src="${it.url}" alt="">`:isImage(it.p)?"":`<span class="file-ico">${h(fileExt(it.p.nom))}</span>`}</div>
+      <div class="meta"><span class="name">${h(it.p.nom)} ${fmtSize(it.p.taille)}</span>
+      <input type="text" placeholder="Légende" value="${h(it.p.legende||"")}" data-leg="${it.k}" aria-label="Légende de ${h(it.p.nom)}">
+      <button class="btn small danger" type="button" data-rm="${it.k}">Retirer</button></div></div>`).join("")}</div>`:`<p class="small muted">Aucune pièce jointe pour l'instant.</p>`}
+  </div>`;
+}
+function viewFicheForm(){
+  if(!S.draft || S.draft.entry.type!=="fiche") startDraft("fiche");
+  const e=S.draft.entry, act=actOf(e.activite);
+  return `<form class="stack" id="ficheForm" novalidate>
+    <div class="row between"><h1>${e.id?"Modifier la fiche":"Fiche activité"}</h1><button class="btn small ghost" type="button" data-cancel>Annuler</button></div>
+    <div class="card" id="exBox">${exemplesHTML(e.exemple||"",false)}</div>
+    <div class="card">
+      <h3>1 · L'activité</h3>
+      <label class="f">Titre court<span class="hint">ex. Implantation d'un pavillon, Détection avant terrassement…</span><input type="text" id="fTitre" value="${h(e.titre)}" required></label>
+      <div class="grid2"><label class="f">Date<input type="date" id="fDate" value="${h(e.date)}"></label><label class="f">Lieu (commune)<input type="text" id="fLieu" value="${h(e.lieu)}"></label></div>
+      ${periodeSelect(e.periode_id)}
+      <label class="f">Activité du référentiel<select id="fAct"><option value="">Choisir…</option>${[1,2,3,0].map(pl=>`<optgroup label="${h(POLES[pl])}">${ACTIVITES.filter(a=>a.pole===pl).map(a=>`<option value="${a.a}"${a.a===e.activite?" selected":""}>${a.a==="AUT"?"":a.a+" · "}${h(a.l)}</option>`).join("")}</optgroup>`).join("")}</select>
+      <span class="hint" id="actAide">${act?h(act.aide):""}</span></label>
+      <label class="f">Contexte : client, type d'opération<span class="hint">Pour qui ? Pour quel projet ?</span><input type="text" id="fOp" value="${h(e.operation)}"></label>
+    </div>
+    <div class="card">
+      <h3>2 · Ce que j'ai fait</h3>
+      <label class="f">Tâches réalisées, dans l'ordre<textarea id="fTaches" rows="5">${h(e.taches)}</textarea></label>
+      <fieldset><legend>Matériel et logiciels utilisés</legend><div class="chips" id="matChips">${orderedMateriel().map((m,i)=>`<label class="chip"><input type="checkbox" name="mat" value="${h(m)}"${e.materiel?.includes(m)?" checked":""}>${h(m)}</label>`).join("")}</div>
+      <input type="text" id="fMatAutre" placeholder="Autre matériel (marque, modèle…)" value="${h(e.materiel_autre)}" aria-label="Autre matériel"></fieldset>
+      <label class="f">Sécurité et environnement<span class="hint">EPI, signalisation, risques repérés, tri des déchets… (C06, C03)</span><textarea id="fSecu" rows="3">${h(e.securite)}</textarea></label>
+    </div>
+    <div class="card">
+      <h3>3 · Compétences mobilisées</h3>
+      <p class="small muted">Cochées automatiquement selon l'activité. Ajustez si besoin.</p>
+      <div class="comp-list" id="compList">${[1,2,3].map(b=>`<p class="eyebrow" style="margin-top:6px">${h(BLOCS[b].t)} · ${BLOCS[b].u}</p>${COMPETENCES.filter(c=>c.bloc===b).map(c=>`<label class="comp-opt"><input type="checkbox" name="comp" value="${c.c}"${e.competences.includes(c.c)?" checked":""}><span class="code">${c.c}</span><span>${h(c.l)}</span></label>`).join("")}`).join("")}</div>
+    </div>
+    <div class="card">
+      <h3>4 · Mon analyse</h3>
+      <fieldset><legend>Mon niveau d'autonomie</legend><div class="radio-list">${AUTONOMIE.map(([v,l])=>`<label class="chip"><input type="radio" name="auto" value="${v}"${e.autonomie===v?" checked":""}>${h(l)}</label>`).join("")}</div></fieldset>
+      <label class="f">Ce qui a bien marché<textarea id="fReu" rows="3">${h(e.reussites)}</textarea></label>
+      <label class="f">Aléas et difficultés, comment on les a réglés<textarea id="fDif" rows="3">${h(e.difficultes)}</textarea></label>
+      <label class="f">Ce que j'ai appris<textarea id="fApp" rows="3">${h(e.appris)}</textarea></label>
+    </div>
+    <div class="card">
+      <h3>5 · Photos et fichiers</h3>
+      <div class="notice">Pas de visage sans accord, pas de document client confidentiel sans l'autorisation de votre tuteur.</div>
+      <div id="piecesBox">${piecesEditor()}</div>
+    </div>
+    <div id="saveProg" hidden class="stack" style="gap:6px"><span class="small muted" id="saveTxt">Envoi…</span><div class="progress"><i id="saveBar"></i></div></div>
+    <button class="btn primary block" type="submit" id="saveBtn">Enregistrer la fiche</button>
+  </form>`;
+}
+function exemplesHTML(selId,open){
+  const list=orderedExamples(); const top=list.slice(0,NB_PROPOSITIONS); const rest=list.slice(NB_PROPOSITIONS);
+  const row=(x)=>{ const a=actOf(x.a); return `<button type="button" class="ex${x.id===selId?" on":""}" data-ex="${x.id}" aria-pressed="${x.id===selId}">
+    <span class="ex-t">${h(x.t)}</span>
+    <span class="tags">${a&&a.a!=="AUT"?`<span class="tag act">${a.a}</span>`:""}${x.c.map(c=>`<span class="tag" title="${h(compOf(c)?.l)}">${c}</span>`).join("")}</span></button>`; };
+  return `<div class="section-title"><h3>Partir d'un exemple</h3><span class="small muted">facultatif</span></div>
+    <p class="small muted">Touchez l'activité qui ressemble à ce que vous avez fait : le titre, l'activité, les compétences et le matériel se remplissent. Vous modifiez ensuite.</p>
+    <div class="ex-list">${top.map(row).join("")}</div>
+    <details class="more" id="exMore"${open?" open":""}><summary>Voir les ${rest.length} autres exemples</summary>
+      <div class="stack" style="gap:10px;margin-top:10px">${[1,2,3,0].map(pl=>{ const l=rest.filter(x=>(actOf(x.a)?.pole??0)===pl); return l.length?`<p class="eyebrow">${h(POLES[pl])}</p><div class="ex-list">${l.map(row).join("")}</div>`:""; }).join("")}</div>
+    </details>`;
+}
+function applyExample(x){
+  const tf=$("#fTitre"); const prev=exOf(S.draft.entry.exemple);
+  if(!tf.value.trim() || (prev && tf.value.trim()===prev.t)) tf.value=x.t;
+  $("#fAct").value=x.a; const a=actOf(x.a); $("#actAide").textContent=a?a.aide:"";
+  document.querySelectorAll('input[name=comp]').forEach(i=>{ i.checked = x.c.includes(i.value) || (i.checked && !(prev && prev.c.includes(i.value))); });
+  document.querySelectorAll('input[name=mat]').forEach(i=>{ if(x.m.includes(i.value)) i.checked=true; });
+  S.draft.entry.exemple=x.id; pushRecent("ex",[x.id]);
+  $("#exBox").innerHTML=exemplesHTML(x.id,false);
+  toast("Exemple appliqué : complétez la fiche");
+}
+afterRender.fiche = ()=>{
+  bindPieces();
+  $("#exBox").addEventListener("click",ev=>{ const b=ev.target.closest("[data-ex]"); if(!b) return; const x=exOf(b.dataset.ex); if(x) applyExample(x); });
+  $("#fAct").addEventListener("change",ev=>{
+    const a=actOf(ev.target.value); $("#actAide").textContent=a?a.aide:"";
+    if(a) document.querySelectorAll('input[name=comp]').forEach(i=>{ if(a.comp.includes(i.value)) i.checked=true; });
+  });
+  $("#ficheForm").addEventListener("submit",ev=>{ ev.preventDefault(); collectFiche(); if(S.draft.entry.materiel.length) pushRecent("mat",S.draft.entry.materiel); delete S.draft.entry.exemple; saveDraft(); });
+};
+function collectFiche(){
+  const e=S.draft.entry;
+  e.titre=$("#fTitre").value.trim(); e.date=$("#fDate").value||today(); e.lieu=$("#fLieu").value.trim();
+  e.periode_id=$("#fPer")? ($("#fPer").value||null) : e.periode_id;
+  e.activite=$("#fAct").value; e.operation=$("#fOp").value.trim(); e.taches=$("#fTaches").value.trim();
+  e.materiel=[...document.querySelectorAll('input[name=mat]:checked')].map(i=>i.value); e.materiel_autre=$("#fMatAutre").value.trim();
+  e.securite=$("#fSecu").value.trim(); e.competences=[...document.querySelectorAll('input[name=comp]:checked')].map(i=>i.value);
+  e.autonomie=(document.querySelector('input[name=auto]:checked')||{}).value||"";
+  e.reussites=$("#fReu").value.trim(); e.difficultes=$("#fDif").value.trim(); e.appris=$("#fApp").value.trim();
+}
+function viewJournalForm(){
+  if(!S.draft || S.draft.entry.type!=="journal") startDraft("journal");
+  const e=S.draft.entry;
+  return `<form class="stack" id="journalForm" novalidate>
+    <div class="row between"><h1>${e.id?"Modifier la note":"Note rapide"}</h1><button class="btn small ghost" type="button" data-cancel>Annuler</button></div>
+    <div class="card">
+      <div class="grid2"><label class="f">Date<input type="date" id="jDate" value="${h(e.date)}"></label><label class="f">Lieu<input type="text" id="jLieu" value="${h(e.lieu)}"></label></div>
+      ${periodeSelect(e.periode_id)}
+      <label class="f">Ma journée en quelques lignes<span class="hint">Où, avec qui, quoi, quel matériel, une chose apprise.</span><textarea id="jTxt" rows="6">${h(e.contenu)}</textarea></label>
+    </div>
+    <div class="card"><h3>Photos et fichiers</h3><div id="piecesBox">${piecesEditor()}</div></div>
+    <div id="saveProg" hidden class="stack" style="gap:6px"><span class="small muted" id="saveTxt">Envoi…</span><div class="progress"><i id="saveBar"></i></div></div>
+    <button class="btn primary block" type="submit" id="saveBtn">Enregistrer la note</button>
+  </form>`;
+}
+afterRender.journal = ()=>{
+  bindPieces();
+  $("#journalForm").addEventListener("submit",ev=>{ ev.preventDefault(); const e=S.draft.entry;
+    e.date=$("#jDate").value||today(); e.lieu=$("#jLieu").value.trim(); e.periode_id=$("#fPer")?($("#fPer").value||null):e.periode_id; e.contenu=$("#jTxt").value.trim();
+    e.titre=e.titre||("Journal du "+fmtDate(e.date)); saveDraft(); });
+};
+function bindPieces(){
+  const box=$("#piecesBox");
+  const add=async files=>{
+    for(const f of files){ const c=await compressImage(f); S.draft.newFiles.push({key:"n"+uid(),file:c,legende:"",url:isImage({type:c.type,nom:c.name})?URL.createObjectURL(c):null}); }
+    keepLegends(); box.innerHTML=piecesEditor(); hydrateThumbs(box); rebindPieceInputs();
+  };
+  const rebindPieceInputs=()=>{
+    $("#addPhoto").addEventListener("change",ev=>{ add([...ev.target.files]); });
+    $("#addFile").addEventListener("change",ev=>{ add([...ev.target.files]); });
+  };
+  box.addEventListener("input",ev=>{ const k=ev.target.dataset.leg; if(!k) return; setLegend(k,ev.target.value); });
+  box.addEventListener("click",ev=>{ const k=ev.target.closest("[data-rm]")?.dataset.rm; if(!k) return;
+    if(k[0]==="o"){ const i=+k.slice(1); const p=S.draft.entry.pieces.splice(i,1)[0]; (S.draft.removed ||= []).push(p.path); }
+    else S.draft.newFiles=S.draft.newFiles.filter(n=>n.key!==k);
+    box.innerHTML=piecesEditor(); hydrateThumbs(box); rebindPieceInputs(); });
+  rebindPieceInputs();
+}
+function setLegend(k,v){ if(k[0]==="o") S.draft.entry.pieces[+k.slice(1)].legende=v; else { const n=S.draft.newFiles.find(x=>x.key===k); if(n) n.legende=v; } }
+function keepLegends(){ document.querySelectorAll("[data-leg]").forEach(i=>setLegend(i.dataset.leg,i.value)); }
+
+async function saveDraft(){
+  const d=S.draft, e=d.entry;
+  if(e.type==="fiche" && !e.titre){ toast("Donnez un titre à la fiche"); $("#fTitre").focus(); return; }
+  if(e.type==="journal" && !e.contenu && !d.newFiles.length && !e.pieces.length){ toast("Écrivez quelques lignes ou ajoutez une photo"); return; }
+  const btn=$("#saveBtn"); btn.disabled=true; const prog=$("#saveProg"); prog.hidden=false;
+  try{
+    const total=d.newFiles.length; let i=0;
+    for(const n of d.newFiles){
+      $("#saveTxt").textContent=`Envoi des fichiers : ${i+1} / ${total}`; $("#saveBar").style.width=Math.round(i/Math.max(total,1)*100)+"%";
+      const path=await Store.uploadFile(S.me.id,n.file);
+      e.pieces.push({path,legende:n.legende,nom:n.file.name,type:n.file.type,taille:n.file.size}); i++;
+    }
+    d.newFiles=[]; $("#saveTxt").textContent="Enregistrement…"; $("#saveBar").style.width="100%";
+    const saved=await Store.saveEntry(e);
+    for(const p of d.removed||[]) try{ await Store.deleteFile(p); }catch(x){}
+    S.draft=null; await refresh(); toast(e.type==="fiche"?"Fiche enregistrée":"Note enregistrée"); go("entry",{id:saved.id});
+  }catch(x){ toast(x.message||"Enregistrement impossible"); btn.disabled=false; prog.hidden=true; }
+}
+
+/* =====================================================================
+   DOSSIER (liste, détail)
+   ===================================================================== */
+function entryCard(e){
+  const ph=(e.pieces||[]).find(isImage); const a=actOf(e.activite); const nc=S.comments.filter(c=>c.entry_id===e.id).length; const nn=newCount(e.id);
+  return `<button class="entry" data-open="${e.id}">
+    <span class="ph" ${ph?`data-thumb="${h(ph.path)}"`:""}>${ph?"":e.type==="journal"?"NOTE":"FICHE"}</span>
+    <span class="body"><span class="small muted">${fmtDate(e.date)}${e.lieu?" · "+h(e.lieu):""}</span><span class="t">${h(e.titre||"Sans titre")}</span>
+    <span class="tags">${e.type==="journal"?'<span class="tag journal">Journal</span>':""}${a&&a.a!=="AUT"?`<span class="tag act">${a.a}</span>`:""}${(e.competences||[]).map(c=>`<span class="tag">${c}</span>`).join("")}${(e.pieces||[]).length?`<span class="tag">${e.pieces.length} pièce${e.pieces.length>1?"s":""}</span>`:""}${nn?`<span class="tag new">${plural(nn,"nouveau retour","nouveaux retours")}</span>`:nc?`<span class="tag com">${plural(nc,"retour","retours")}</span>`:""}</span></span>
+  </button>`;
+}
+function viewDossier(){
+  const f=S.filter; let list=S.entries;
+  if(f==="journal") list=list.filter(e=>e.type==="journal"); else if(f!=="all") list=list.filter(e=>actOf(e.activite)?.pole===+f && e.type==="fiche");
+  const opt=(v,l)=>`<label class="chip"><input type="radio" name="flt" value="${v}"${f===v?" checked":""}>${l}</label>`;
+  return `<div class="stack">
+    <div class="row between"><h1>Mon dossier</h1><button class="btn small primary" data-go="report">Mon rapport</button></div>
+    <div class="filters" role="radiogroup" aria-label="Filtrer">${opt("all","Tout")}${opt("1","Pôle 1 · Foncier")}${opt("2","Pôle 2 · Topo")}${opt("3","Pôle 3 · Réseaux")}${opt("journal","Journal")}</div>
+    ${list.length?`<div class="stack" style="gap:8px">${list.map(entryCard).join("")}</div>`:`<div class="card"><p>Rien ici pour l'instant.</p><button class="btn primary" data-go="fiche">Créer une fiche activité</button></div>`}
+  </div>`;
+}
+afterRender.dossier=()=>{ document.querySelectorAll('input[name=flt]').forEach(i=>i.addEventListener("change",()=>{ S.filter=i.value; render(); })); };
+
+function findEntry(id){ return (S.me.role==="eleve"?S.entries:S.allEntries).find(e=>e.id===id); }
+function viewEntry(){
+  const e=findEntry(S.p.id); if(!e) return `<p>Fiche introuvable.</p>`;
+  const a=actOf(e.activite); const mine=S.me.role==="eleve"; const coms=S.comments.filter(c=>c.entry_id===e.id);
+  const per=(mine?S.periodes:S.allPeriodes).find(p=>p.id===e.periode_id);
+  const kv=(k,v)=>v?`<dt>${k}</dt><dd>${h(v)}</dd>`:"";
+  const imgs=(e.pieces||[]).filter(isImage), files=(e.pieces||[]).filter(p=>!isImage(p));
+  return `<div class="stack">
+    <div class="row between"><button class="btn small ghost" data-back>← Retour</button>${mine?`<div class="row"><button class="btn small" data-edit="${e.id}">Modifier</button><button class="btn small danger" data-del="${e.id}">Supprimer</button></div>`:""}</div>
+    <div><span class="eyebrow">${e.type==="journal"?"Note de journal":(a?a.a+" · "+h(a.l):"Fiche activité")}</span><h1>${h(e.titre||"Sans titre")}</h1>
+    <p class="muted">${fmtDate(e.date)}${e.lieu?" · "+h(e.lieu):""}${per?" · "+h(perLabel(per))+(per.entreprise?", "+h(per.entreprise):""):""}</p></div>
+    <div class="split-entry"><div class="a-text">
+    ${e.type==="journal"?`<div class="card"><p class="block-text">${h(e.contenu)||'<span class="muted">Pas de texte.</span>'}</p>${mine?`<button class="btn small" data-tofiche="${e.id}">Transformer en fiche activité</button>`:""}</div>`:`
+    <div class="card"><dl class="kv">${kv("Contexte",e.operation)}${kv("Tâches réalisées",e.taches)}${kv("Matériel",[...(e.materiel||[]),e.materiel_autre].filter(Boolean).join(", "))}${kv("Sécurité, environnement",e.securite)}${kv("Autonomie",(AUTONOMIE.find(x=>x[0]===e.autonomie)||[])[1])}${kv("Réussites",e.reussites)}${kv("Aléas, difficultés",e.difficultes)}${kv("Ce que j'ai appris",e.appris)}</dl>
+    ${(e.competences||[]).length?`<div class="tags">${e.competences.map(c=>`<span class="tag act" title="${h(compOf(c)?.l)}">${c} ${h(compOf(c)?.l||"")}</span>`).join("")}</div>`:""}</div>`}
+    </div>
+    ${imgs.length?`<div class="stack a-imgs">${imgs.map(p=>`<figure class="figure" style="margin:0"><div data-thumb="${h(p.path)}" data-alt="${h(p.legende)}"></div>${p.legende?`<figcaption>${h(p.legende)}</figcaption>`:""}</figure>`).join("")}</div>`:""}
+    ${files.length?`<div class="card tight a-files"><h3>Fichiers joints</h3>${files.map(p=>`<div class="row between"><span style="min-width:0;overflow-wrap:anywhere">${h(p.nom)} <span class="small muted">${fmtSize(p.taille)}${p.legende?" · "+h(p.legende):""}</span></span><button class="btn small" data-dlfile="${h(p.path)}" data-name="${h(p.nom)}">Télécharger</button></div>`).join("")}</div>`:""}
+    <div class="card a-coms"><h3>Retours du professeur et du tuteur</h3>
+      ${coms.length?coms.map(c=>commentHTML(c,!mine)).join(""):`<p class="small muted">Aucun retour pour l'instant.</p>`}
+      ${!mine?`<div class="stack" style="gap:6px"><span class="small muted">Réagir en un geste</span><div class="reacts">${Object.entries(REACTIONS).map(([k,l])=>`<button type="button" class="rx-btn" data-react="${k}">${l}</button>`).join("")}</div></div>`:""}
+      ${!mine?`<form id="comForm" class="stack" style="gap:8px"><label class="f">Ajouter un commentaire<textarea id="comTxt" rows="3" placeholder="Conseil, question, point à développer dans le rapport…"></textarea></label><button class="btn primary" type="submit">Publier le commentaire</button></form>`:""}
+    </div></div>
+  </div>`;
+}
+afterRender.entry=()=>{
+  if(S.me.role==="eleve"){ markSeen(S.p.id); renderTabs(); }
+  document.querySelectorAll("[data-react]").forEach(b=>b.addEventListener("click",async()=>{ b.disabled=true;
+    try{ const c=await Store.addComment(S.p.id,"",S.me,b.dataset.react); S.comments.push(c); toast(`Réaction « ${REACTIONS[b.dataset.react]} » envoyée`); render(); }catch(x){ toast(x.message); b.disabled=false; } }));
+  $("#comForm")?.addEventListener("submit",async ev=>{ ev.preventDefault(); const t=$("#comTxt").value.trim(); if(!t) return;
+    try{ const c=await Store.addComment(S.p.id,t,S.me); S.comments.push(c); toast("Commentaire publié"); render(); }catch(x){ toast(x.message); } });
+};
+
+/* =====================================================================
+   ÉLÈVE — MA PFMP
+   ===================================================================== */
+function viewPfmp(){
+  return `<div class="stack"><h1>Mon stage</h1>
+    <p class="small muted">Les dates, l'entreprise et le tuteur sont indiqués par votre professeur. Signalez-lui toute erreur. Vous rédigez la présentation de l'entreprise : elle ouvre votre rapport.</p>
+    ${S.periodes.length?S.periodes.map(p=>`<div class="card"><div style="min-width:0"><span class="eyebrow">${h(perLabel(p))} · ${h(periodeState(p))}</span><h2>${h(p.entreprise||"Entreprise à venir")}</h2></div>
+      <dl class="kv"><dt>Dates</dt><dd>${p.date_debut?`du ${fmtDate(p.date_debut)} au ${fmtDate(p.date_fin)}`:"—"}</dd><dt>Lieu</dt><dd>${h(p.ville)||"—"}</dd><dt>Tuteur</dt><dd>${h(p.tuteur)||"—"}${p.tuteur_fonction?", "+h(p.tuteur_fonction):""}</dd><dt>Secteur</dt><dd>${h(p.secteur)||"—"}</dd><dt>Effectif</dt><dd>${h(p.effectif)||"—"}</dd><dt>Fiches</dt><dd>${S.entries.filter(e=>e.periode_id===p.id).length}</dd></dl>
+      ${p.presentation?`<p class="block-text small">${h(p.presentation)}</p>`:`<p class="small muted">Présentation de l'entreprise à rédiger.</p>`}
+      <button class="btn${p.presentation?"":" primary"}" data-editper="${p.id}">${p.presentation?"Modifier la présentation":"Présenter l'entreprise"}</button>
+      ${p.tuteur_token?`<details class="more"><summary>Lien pour ton tuteur</summary><div class="stack" style="gap:8px;margin-top:8px"><p class="small muted">Envoie ce lien à ton tuteur (SMS ou mail). Sans créer de compte, il voit tes fiches de cette PFMP et peut réagir : Bravo, Bien vu, À développer.</p>${linkBoxHTML(p,false)}</div></details>`:""}</div>`).join("")
+      :`<div class="card"><p>Votre professeur n'a pas encore indiqué votre période de PFMP.</p></div>`}
+  </div>`;
+}
+function viewPfmpForm(){
+  const p=S.periodes.find(x=>x.id===S.p.id); if(!p) return "<p>Période introuvable.</p>";
+  return `<form class="stack" id="perForm" novalidate>
+    <div class="row between"><h1>Présenter l'entreprise</h1><button class="btn small ghost" type="button" data-go="pfmp">Annuler</button></div>
+    <div class="card tight"><span class="eyebrow">${h(perLabel(p))}</span><h3>${h(p.entreprise||"Entreprise à venir")}</h3><p class="small muted">${p.date_debut?`du ${fmtDate(p.date_debut)} au ${fmtDate(p.date_fin)}`:""}${p.ville?" · "+h(p.ville):""}${p.tuteur?" · tuteur : "+h(p.tuteur):""}</p></div>
+    <div class="card">
+      <div class="grid2"><label class="f">Secteur<select id="pSec"><option value="">Choisir…</option>${SECTEURS.map(s=>`<option${s===p.secteur?" selected":""}>${h(s)}</option>`).join("")}</select></label>
+      <label class="f">Effectif<input type="text" id="pEff" value="${h(p.effectif)}" placeholder="ex. 8 salariés"></label></div>
+      <label class="f">Présentation de l'entreprise<span class="hint">Activités principales, clients, organisation (qui fait quoi), matériel et logiciels, votre place dans l'équipe.</span><textarea id="pPres" rows="8">${h(p.presentation)}</textarea></label>
+    </div>
+    <button class="btn primary block" type="submit">Enregistrer</button>
+  </form>`;
+}
+afterRender.pfmpForm=()=>{
+  $("#perForm")?.addEventListener("submit",async ev=>{ ev.preventDefault();
+    const p={id:S.p.id,secteur:$("#pSec").value,effectif:$("#pEff").value.trim(),presentation:$("#pPres").value.trim()};
+    try{ await Store.updatePresentation(p); await refresh(); toast("Présentation enregistrée"); go("pfmp"); }catch(x){ toast(x.message); } });
+};
+
+/* =====================================================================
+   PROFESSEUR — PÉRIODES DE PFMP (1 à 5)
+   ===================================================================== */
+const NB_PFMP = 5;
+function viewPeriodes(){
+  const classes=[...new Set(S.students.map(s=>s.classe).filter(Boolean))].sort();
+  const cls = S.pf.classe ?? (S.classe||classes[0]||""); const num=S.pf.numero||1;
+  const list=S.students.filter(s=>!cls||s.classe===cls);
+  const ex=s=>S.allPeriodes.find(p=>p.eleve_id===s.id&&p.numero===num);
+  const ref=list.map(ex).find(p=>p&&p.date_debut)||{};
+  const done=list.filter(ex).length;
+  const v=(s,k)=>h((ex(s)||{})[k]||"");
+  return `<div class="stack">
+    <div class="row between"><button class="btn small ghost" data-go="home">← Classe</button></div>
+    <div><span class="eyebrow">Espace professeur</span><h1>Périodes de PFMP</h1>
+    <p class="muted">Pour chaque élève : dates, entreprise et tuteur. L'élève les retrouve sur son accueil et rédige la présentation de l'entreprise.</p></div>
+    <div class="card">
+      <div class="grid2"><label class="f">Classe<select id="pfCls">${classes.length?"":`<option value="">Toutes</option>`}${classes.map(c=>`<option${c===cls?" selected":""}>${h(c)}</option>`).join("")}</select></label>
+      <label class="f">Période<select id="pfNum">${Array.from({length:NB_PFMP},(_,i)=>i+1).map(n=>`<option value="${n}"${n===num?" selected":""}>PFMP ${n}</option>`).join("")}</select></label></div>
+      <div class="grid2"><label class="f">Début<input type="date" id="pfDeb" value="${h(ref.date_debut||"")}"></label><label class="f">Fin<input type="date" id="pfFin" value="${h(ref.date_fin||"")}"></label></div>
+      <button class="btn" type="button" id="pfApply">Appliquer ces dates à tous les élèves</button>
+      <p class="small muted">${done} / ${list.length} élèves renseignés pour la PFMP ${num}.</p>
+    </div>
+    ${list.length&&isDesk()?`<form id="pfForm" class="stack" novalidate><div class="table-wrap"><table class="form-table"><thead><tr><th>Élève</th><th>Entreprise</th><th>Commune</th><th>Tuteur</th><th>Fonction</th><th>Début</th><th>Fin</th><th></th></tr></thead><tbody>
+      ${list.map(s=>{ const e=ex(s); const k=s.id; return `<tr class="pf-row" data-sid="${k}"><td><b>${h(s.nom)}</b> ${h(s.prenom)}</td>
+        <td><input type="text" id="pf-${k}-entreprise" value="${v(s,"entreprise")}" aria-label="Entreprise de ${h(s.prenom)}"></td>
+        <td><input type="text" id="pf-${k}-ville" value="${v(s,"ville")}" aria-label="Commune"></td>
+        <td><input type="text" id="pf-${k}-tuteur" value="${v(s,"tuteur")}" aria-label="Tuteur"></td>
+        <td><input type="text" id="pf-${k}-tuteur_fonction" value="${v(s,"tuteur_fonction")}" aria-label="Fonction du tuteur"></td>
+        <td><input type="date" class="pf-deb" id="pf-${k}-date_debut" value="${v(s,"date_debut")}" aria-label="Début"></td>
+        <td><input type="date" class="pf-fin" id="pf-${k}-date_fin" value="${v(s,"date_fin")}" aria-label="Fin"></td>
+        <td>${e?`<button type="button" class="btn small ghost" data-delperprof="${e.id}">Retirer</button>`:`<span class="status none">à saisir</span>`}</td></tr>`; }).join("")}
+      </tbody></table></div><div class="row"><button class="btn primary" type="submit" id="pfSave">Enregistrer la PFMP ${num}</button></div></form>`
+    :list.length?`<form id="pfForm" class="stack" novalidate>
+      ${list.map(s=>{ const e=ex(s); const k=s.id; return `<div class="card pf-row" data-sid="${k}">
+        <div class="row between"><b>${h(s.nom)} ${h(s.prenom)}</b>${e?`<span class="row" style="gap:6px"><span class="status ok">enregistrée</span><button type="button" class="btn small ghost" data-delperprof="${e.id}">Retirer</button></span>`:`<span class="status none">à saisir</span>`}</div>
+        <div class="grid2"><label class="f">Entreprise<input type="text" id="pf-${k}-entreprise" value="${v(s,"entreprise")}"></label><label class="f">Commune<input type="text" id="pf-${k}-ville" value="${v(s,"ville")}"></label></div>
+        <div class="grid2"><label class="f">Tuteur<input type="text" id="pf-${k}-tuteur" value="${v(s,"tuteur")}" placeholder="M. ou Mme Nom"></label><label class="f">Fonction du tuteur<input type="text" id="pf-${k}-tuteur_fonction" value="${v(s,"tuteur_fonction")}" placeholder="ex. Géomètre-expert"></label></div>
+        <div class="grid2"><label class="f">Début<input type="date" class="pf-deb" id="pf-${k}-date_debut" value="${v(s,"date_debut")}"></label><label class="f">Fin<input type="date" class="pf-fin" id="pf-${k}-date_fin" value="${v(s,"date_fin")}"></label></div>
+      </div>`; }).join("")}
+      <button class="btn primary block" type="submit" id="pfSave">Enregistrer la PFMP ${num}</button>
+    </form>`:`<div class="card"><p>Aucun élève dans cette classe.</p><button class="btn primary" data-go="accounts">Créer les comptes élèves</button></div>`}
+  </div>`;
+}
+afterRender.periodes=()=>{
+  $("#pfCls")?.addEventListener("change",ev=>{ S.pf={...S.pf,classe:ev.target.value}; render(); });
+  $("#pfNum").addEventListener("change",ev=>{ S.pf={...S.pf,numero:+ev.target.value}; render(); });
+  $("#pfApply").addEventListener("click",()=>{ const d=$("#pfDeb").value, f=$("#pfFin").value; if(!d&&!f){ toast("Indiquez d'abord les dates"); return; }
+    document.querySelectorAll(".pf-deb").forEach(i=>{ if(d) i.value=d; }); document.querySelectorAll(".pf-fin").forEach(i=>{ if(f) i.value=f; }); toast("Dates appliquées : pensez à enregistrer"); });
+  $("#pfForm")?.addEventListener("submit",async ev=>{ ev.preventDefault();
+    const num=S.pf.numero||1; const btn=$("#pfSave"); btn.disabled=true; let n=0;
+    try{
+      for(const row of document.querySelectorAll(".pf-row")){
+        const sid=row.dataset.sid; const g=k=>$(`#pf-${sid}-${k}`).value.trim();
+        const vals={entreprise:g("entreprise"),ville:g("ville"),tuteur:g("tuteur"),tuteur_fonction:g("tuteur_fonction"),date_debut:g("date_debut")||null,date_fin:g("date_fin")||null};
+        const old=S.allPeriodes.find(p=>p.eleve_id===sid&&p.numero===num);
+        if(!old && !vals.entreprise && !vals.tuteur && !vals.date_debut) continue;
+        if(old && ["entreprise","ville","tuteur","tuteur_fonction","date_debut","date_fin"].every(k=>(old[k]||null)===(vals[k]||null))) continue;
+        await Store.savePeriode({...(old||{}),eleve_id:sid,numero:num,intitule:`PFMP ${num}`,...vals}); n++;
+      }
+      await refresh(); toast(n?plural(n,"période enregistrée","périodes enregistrées"):"Aucune modification"); render();
+    }catch(x){ toast(x.message); btn.disabled=false; }
+  });
+};
+
+/* =====================================================================
+   RAPPORT (aperçu + export Word)
+   ===================================================================== */
+function reportModel(eleve, periodes, entries, perId){
+  const per = perId ? periodes.find(p=>p.id===perId) : null;
+  const ents = (perId ? entries.filter(e=>e.periode_id===perId) : entries).slice().sort((a,b)=>(a.date||"").localeCompare(b.date||""));
+  const fiches=ents.filter(e=>e.type==="fiche"), journal=ents.filter(e=>e.type==="journal");
+  const B=[]; const P=(t,o={})=>B.push({k:"p",t,...o});
+  B.push({k:"title",t:"Rapport de PFMP"});
+  P(`${eleve.prenom} ${eleve.nom}${eleve.classe?" — "+eleve.classe:""}`,{b:true});
+  P(`${CONFIG.DIPLOME} — ${CONFIG.LYCEE}`);
+  const pers = per?[per]:periodes;
+  pers.forEach(p=>P(`${perLabel(p)} : ${p.entreprise||"[entreprise]"}${p.ville?", "+p.ville:""}${p.date_debut?` — du ${fmtDate(p.date_debut)} au ${fmtDate(p.date_fin)}`:""}${p.tuteur?` — tuteur : ${p.tuteur}${p.tuteur_fonction?" ("+p.tuteur_fonction+")":""}`:""}`));
+  B.push({k:"h1",t:"1. Présentation de l'entreprise"});
+  if(!pers.length) P("[À compléter : nom, activité, clients, organisation, matériel.]",{todo:true});
+  pers.forEach(p=>{ if(pers.length>1) B.push({k:"h2",t:`${perLabel(p)} · ${p.entreprise||""}`});
+    const facts=[p.secteur&&`Secteur : ${p.secteur}`,p.effectif&&`Effectif : ${p.effectif}`,p.ville&&`Ville : ${p.ville}`].filter(Boolean);
+    if(facts.length) P(facts.join(" · "));
+    if(p.presentation) p.presentation.split(/\n+/).forEach(l=>P(l)); else P("[À compléter : activités principales, clients, organisation de l'équipe, matériel et logiciels, ma place dans l'entreprise.]",{todo:true}); });
+  B.push({k:"h1",t:"2. Mes activités"});
+  if(!fiches.length) P("[Aucune fiche activité pour l'instant.]",{todo:true});
+  let n=0;
+  [1,2,3,0].forEach(pl=>{ const list=fiches.filter(e=>(actOf(e.activite)?.pole??0)===pl); if(!list.length) return;
+    B.push({k:"h2",t:POLES[pl]});
+    list.forEach(e=>{ n++; const a=actOf(e.activite);
+      B.push({k:"h3",t:`2.${n} ${e.titre||"Activité"}`});
+      P(`${fmtDate(e.date)}${e.lieu?" — "+e.lieu:""}${a&&a.a!=="AUT"?` — Activité ${a.a} : ${a.l}`:""}`,{i:true});
+      const line=(lab,v)=>{ if(v) B.push({k:"p",lab,t:v}); };
+      line("Contexte",e.operation); line("Ce que j'ai fait",e.taches);
+      line("Matériel et logiciels",[...(e.materiel||[]),e.materiel_autre].filter(Boolean).join(", "));
+      line("Sécurité et environnement",e.securite);
+      line("Mon autonomie",(AUTONOMIE.find(x=>x[0]===e.autonomie)||[])[1]);
+      line("Ce qui a bien marché",e.reussites); line("Aléas et difficultés",e.difficultes); line("Ce que j'ai appris",e.appris);
+      if((e.competences||[]).length) line("Compétences mobilisées",e.competences.map(c=>`${c} ${compOf(c)?.l||""}`).join(" ; "));
+      (e.pieces||[]).forEach(p=>{ if(isImage(p)) B.push({k:"img",path:p.path,cap:p.legende||""}); else B.push({k:"p",t:`Pièce jointe : ${p.nom}${p.legende?" — "+p.legende:""}`,i:true}); });
+    }); });
+  if(journal.length){ B.push({k:"h1",t:"3. Journal de bord"});
+    journal.forEach(e=>{ B.push({k:"h3",t:`${fmtDate(e.date)}${e.lieu?" — "+e.lieu:""}`}); (e.contenu||"").split(/\n+/).filter(Boolean).forEach(l=>P(l));
+      (e.pieces||[]).filter(isImage).forEach(p=>B.push({k:"img",path:p.path,cap:p.legende||""})); }); }
+  B.push({k:"h1",t:`${journal.length?4:3}. Bilan des compétences`});
+  const cnt=compCounts(fiches);
+  [1,2,3].forEach(b=>{ B.push({k:"h3",t:`${BLOCS[b].t} (${BLOCS[b].u})`}); COMPETENCES.filter(c=>c.bloc===b).forEach(c=>P(`${c.c} — ${c.l} : ${cnt[c.c]?plural(cnt[c.c],"activité","activités"):"non rencontrée pendant la PFMP"}`)); });
+  B.push({k:"h1",t:`${journal.length?5:4}. Conclusion`});
+  P("[À rédiger : ce que cette PFMP m'a apporté, ce que je veux encore apprendre, mon projet professionnel.]",{todo:true});
+  return {blocks:B, eleve, per, nFiches:fiches.length, nJournal:journal.length};
+}
+function reportContext(){
+  if(S.me.role==="eleve") return {eleve:S.me,periodes:S.periodes,entries:S.entries};
+  const eleve=S.students.find(s=>s.id===S.p.eleve); return {eleve,periodes:S.allPeriodes.filter(p=>p.eleve_id===eleve?.id),entries:S.allEntries.filter(e=>e.eleve_id===eleve?.id)};
+}
+function viewReport(){
+  const ctx=reportContext(); if(!ctx.eleve) return "<p>Élève introuvable.</p>";
+  const perId=S.p.per||"";
+  const m=reportModel(ctx.eleve,ctx.periodes,ctx.entries,perId||null);
+  const body=m.blocks.map(b=>{ switch(b.k){
+    case "title": return `<h1>${h(b.t)}</h1>`;
+    case "h1": return `<h2>${h(b.t)}</h2>`;
+    case "h2": return `<h3 style="font-size:1.2rem">${h(b.t)}</h3>`;
+    case "h3": return `<h3>${h(b.t)}</h3>`;
+    case "img": return `<figure class="figure" style="margin:0"><div data-thumb="${h(b.path)}"></div>${b.cap?`<figcaption>${h(b.cap)}</figcaption>`:""}</figure>`;
+    default: return `<p class="${b.todo?"todo":""}" style="${b.i?"font-style:italic":""}${b.b?";font-weight:700":""}">${b.lab?`<b>${h(b.lab)} : </b>`:""}${h(b.t)}</p>`; } }).join("");
+  return `<div class="stack">
+    <div class="row between"><button class="btn small ghost" data-back>← Retour</button></div>
+    <div><span class="eyebrow">Trame à finir dans Word</span><h1>${S.me.role==="eleve"?"Mon rapport de stage":"Rapport de "+h(ctx.eleve.prenom+" "+ctx.eleve.nom)}</h1>
+    <p class="muted">Vos fiches et photos rangées par pôle d'activité. Téléchargez le fichier Word, puis rédigez les parties en orange.</p></div>
+    ${ctx.periodes.length>1?`<label class="f">Période<select id="repPer"><option value="">Toutes les périodes</option>${ctx.periodes.map(p=>`<option value="${p.id}"${p.id===perId?" selected":""}>${h(perLabel(p))}${p.entreprise?" · "+h(p.entreprise):""}</option>`).join("")}</select></label>`:""}
+    <div class="card">${gaugeHTML(ctx.entries,ctx.periodes,{max:7,title:(S.me.role==="eleve"?"Mon rapport est prêt à ":"Rapport prêt à ")+reportReadiness(ctx.entries,ctx.periodes).pct+" %"})}</div>
+    <div class="row"><button class="btn primary" id="dlDocx">Télécharger en Word (.docx)</button><span class="small muted">${plural(m.nFiches,"fiche","fiches")} · ${plural(m.nJournal,"note","notes")}</span></div>
+    <div id="dlProg" hidden class="small muted"></div>
+    <article class="report">${body}</article>
+  </div>`;
+}
+afterRender.report=()=>{
+  $("#repPer")?.addEventListener("change",ev=>{ S.p={...S.p,per:ev.target.value}; render(); });
+  $("#dlDocx").addEventListener("click",async ev=>{
+    const btn=ev.currentTarget; btn.disabled=true; const pr=$("#dlProg"); pr.hidden=false; pr.textContent="Préparation du fichier…";
+    try{ const ctx=reportContext(); const m=reportModel(ctx.eleve,ctx.periodes,ctx.entries,S.p.per||null);
+      const blob=await buildDocx(m,(i,n)=>pr.textContent=`Ajout des photos : ${i} / ${n}`);
+      await saveFile(`Rapport_PFMP_${norm(ctx.eleve.nom)}_${norm(ctx.eleve.prenom)}.docx`,blob); pr.hidden=true;
+    }catch(x){ pr.textContent="Création du fichier impossible : "+(x.message||x); } finally{ btn.disabled=false; } });
+};
+
+/* Générateur .docx minimal (JSZip) */
+const xe = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"");
+function wRun(t,o={}){ return `<w:r><w:rPr>${o.b?"<w:b/>":""}${o.i?"<w:i/>":""}${o.color?`<w:color w:val="${o.color}"/>`:""}</w:rPr><w:t xml:space="preserve">${xe(t)}</w:t></w:r>`; }
+function wPara(runs,style,extra=""){ return `<w:p><w:pPr>${style?`<w:pStyle w:val="${style}"/>`:""}${extra}</w:pPr>${runs}</w:p>`; }
+async function toJpeg(blob){
+  const im=await loadImage(blob); const cv=document.createElement("canvas"); const sc=Math.min(1,1600/Math.max(im.width,im.height));
+  cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc); const g=cv.getContext("2d"); g.fillStyle="#fff"; g.fillRect(0,0,cv.width,cv.height); g.drawImage(im,0,0,cv.width,cv.height);
+  const out=await new Promise(r=>cv.toBlob(r,"image/jpeg",.85)); return {data:await out.arrayBuffer(),w:cv.width,h:cv.height};
+}
+async function buildDocx(model,onProg){
+  if(typeof JSZip==="undefined") throw new Error("bibliothèque de création Word non chargée");
+  const zip=new JSZip(); const rels=[]; let body=""; let imgN=0; const imgs=model.blocks.filter(b=>b.k==="img"); let done=0;
+  for(const b of model.blocks){
+    if(b.k==="title") body+=wPara(wRun(b.t),"Title");
+    else if(b.k==="h1") body+=wPara(wRun(b.t),"Heading1");
+    else if(b.k==="h2") body+=wPara(wRun(b.t),"Heading2");
+    else if(b.k==="h3") body+=wPara(wRun(b.t),"Heading3");
+    else if(b.k==="img"){
+      onProg?.(++done,imgs.length);
+      try{ const blob=await Store.fileBlob(b.path); if(!blob) continue; const j=await toJpeg(blob); imgN++;
+        const name=`img${imgN}.jpeg`; zip.file(`word/media/${name}`,j.data); const rid=`rIdImg${imgN}`;
+        rels.push(`<Relationship Id="${rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${name}"/>`);
+        const maxW=5760000,maxH=4320000; let cx=maxW, cy=Math.round(maxW*j.h/j.w); if(cy>maxH){ cy=maxH; cx=Math.round(maxH*j.w/j.h); }
+        body+=`<w:p><w:pPr><w:jc w:val="center"/><w:keepNext/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${imgN}" name="Photo ${imgN}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="${imgN}" name="${name}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+        body+=wPara(wRun(`Photo ${imgN}${b.cap?" — "+b.cap:""}`),"Caption");
+      }catch(x){ /* image illisible : ignorée */ }
+    } else {
+      const runs=(b.lab?wRun(b.lab+" : ",{b:true}):"")+wRun(b.t,{i:b.i||b.todo,b:b.b,color:b.todo?"C8460E":null});
+      body+=wPara(runs,null);
+    }
+  }
+  const doc=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:lang w:val="fr-FR"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
+<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>
+<w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:spacing w:after="240"/></w:pPr><w:rPr><w:b/><w:color w:val="163E73"/><w:sz w:val="52"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="360" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:color w:val="163E73"/><w:sz w:val="32"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="80"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading3"><w:name w:val="heading 3"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="60"/><w:outlineLvl w:val="2"/></w:pPr><w:rPr><w:b/><w:color w:val="333333"/><w:sz w:val="24"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Caption"><w:name w:val="caption"/><w:basedOn w:val="Normal"/><w:qFormat/><w:pPr><w:jc w:val="center"/><w:spacing w:after="240"/></w:pPr><w:rPr><w:i/><w:color w:val="555555"/><w:sz w:val="18"/></w:rPr></w:style></w:styles>`;
+  zip.file("[Content_Types].xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpeg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`);
+  zip.file("_rels/.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+  zip.file("word/_rels/document.xml.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>${rels.join("")}</Relationships>`);
+  zip.file("word/document.xml",doc); zip.file("word/styles.xml",styles);
+  return zip.generateAsync({type:"blob",mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+}
+
+/* =====================================================================
+   PROFESSEUR — TABLEAU DE BORD
+   ===================================================================== */
+function studentStats(s){
+  const ents=S.allEntries.filter(e=>e.eleve_id===s.id); const fiches=ents.filter(e=>e.type==="fiche");
+  const last=ents.reduce((m,e)=>{ const t=e.created_at||e.date; return !m||t>m?t:m; },null);
+  const per=currentPeriodeOf(S.allPeriodes.filter(p=>p.eleve_id===s.id));
+  const pers=S.allPeriodes.filter(p=>p.eleve_id===s.id);
+  return {ents,fiches,last,per,cnt:compCounts(fiches),photos:ents.reduce((n,e)=>n+(e.pieces||[]).filter(isImage).length,0),pct:reportReadiness(ents,pers).pct};
+}
+function miniBornes(cnt){ return `<span class="mini-bornes" aria-label="Compétences couvertes">${COMPETENCES.map((c,i)=>`${i===5||i===11?'<i class="gap"></i>':""}<i class="${cnt[c.c]?"on":""}" title="${c.c} : ${cnt[c.c]}"></i>`).join("")}</span>`; }
+function dashTable(rows){
+  return `<div class="table-wrap"><table class="grid-table"><thead><tr><th>Élève</th><th>Classe</th><th>PFMP en cours</th><th>Entreprise</th><th>Tuteur</th><th class="num">Fiches</th><th class="num">Notes</th><th class="num">Photos</th><th>Dernier dépôt</th><th class="num">Rapport</th><th>Compétences C01 → C14</th></tr></thead><tbody>
+  ${rows.map(({s,st})=>{ const d=daysSince(st.last); const cls=d===null?"none":d>7?"warn":"ok"; const lab=d===null?"aucun dépôt":d===0?"aujourd'hui":`il y a ${d} j`;
+    return `<tr data-student="${s.id}" tabindex="0"><td><b>${h(s.nom)}</b> ${h(s.prenom)}</td><td>${h(s.classe)}</td><td>${st.per?`${h(perLabel(st.per))} <span class="small muted">${h(periodeState(st.per))}</span>`:'<span class="muted">—</span>'}</td><td>${h(st.per?.entreprise||"—")}</td><td>${h(st.per?.tuteur||"—")}</td><td class="num">${st.fiches.length}</td><td class="num">${st.ents.length-st.fiches.length}</td><td class="num">${st.photos}</td><td><span class="status ${cls}">${lab}</span></td><td class="num"><b>${st.pct} %</b></td><td>${miniBornes(st.cnt)}</td></tr>`; }).join("")}
+  </tbody></table></div>`;
+}
+function viewDashboard(){
+  const classes=[...new Set(S.students.map(s=>s.classe).filter(Boolean))].sort();
+  const list=S.students.filter(s=>!S.classe||s.classe===S.classe);
+  const rows=list.map(s=>({s,st:studentStats(s)}));
+  const actifs=rows.filter(r=>r.st.last && daysSince(r.st.last)<=7).length;
+  return `<div class="stack">
+    <div class="row between"><div><span class="eyebrow">Espace professeur</span><h1>Suivi des PFMP${isDesk()&&S.classe?" · "+h(S.classe):""}</h1></div>${isDesk()?(list.length?`<button class="btn" id="csvBtn">Exporter le suivi (.csv)</button>`:""):`<div class="row" style="gap:6px"><button class="btn small" data-go="periodes">Périodes PFMP</button><button class="btn small" data-go="accounts">Comptes et classes</button></div>`}</div>
+    ${classes.length>1&&!isDesk()?`<div class="filters">${["",...classes].map(c=>`<label class="chip"><input type="radio" name="cls" value="${h(c)}"${S.classe===c?" checked":""}>${c?h(c):"Toutes les classes"}</label>`).join("")}</div>`:""}
+    <div class="stats"><div class="stat"><b>${list.length}</b><span>élèves</span></div><div class="stat"><b>${rows.reduce((n,r)=>n+r.st.fiches.length,0)}</b><span>fiches déposées</span></div><div class="stat"><b>${actifs}</b><span>actifs cette semaine</span></div>${isDesk()?`<div class="stat"><b>${rows.filter(r=>!r.st.last||daysSince(r.st.last)>7).length}</b><span>sans dépôt depuis 7 j</span></div>`:""}</div>
+    ${list.length&&isDesk()?dashTable(rows):list.length?`<div class="students">${rows.map(({s,st})=>{ const d=daysSince(st.last); const cls=d===null?"none":d>7?"warn":"ok"; const lab=d===null?"aucun dépôt":d===0?"aujourd'hui":`il y a ${d} j`;
+      return `<button class="student" data-student="${s.id}"><span style="min-width:0"><span class="nm">${h(s.nom)} ${h(s.prenom)}</span> <span class="small muted">${h(s.classe)}</span><br><span class="small muted">${st.per?h(perLabel(st.per))+" · "+h(st.per.entreprise||"entreprise à saisir"):"PFMP non renseignée"} · ${plural(st.fiches.length,"fiche","fiches")} · rapport ${st.pct} %</span></span>
+      <span class="status ${cls}">${lab}</span><span style="grid-column:1/-1">${miniBornes(st.cnt)}</span></button>`; }).join("")}</div>`
+      :`<div class="card"><p>Aucun élève pour l'instant.</p><button class="btn primary" data-go="accounts">Créer les comptes élèves</button></div>`}
+    ${list.length&&!isDesk()?`<button class="btn" id="csvBtn">Exporter le suivi (.csv)</button>`:""}
+    <p class="small muted">Carrés verts : compétences C01 à C14 rencontrées au moins une fois (blocs U2 · U31 · U32).</p>
+  </div>`;
+}
+afterRender.home=()=>{
+  if(S.me.role!=="prof"){ checkNewBadges(); return; }
+  document.querySelectorAll('input[name=cls]').forEach(i=>i.addEventListener("change",()=>{ S.classe=i.value; render(); }));
+  $("#csvBtn")?.addEventListener("click",()=>{
+    const list=S.students.filter(s=>!S.classe||s.classe===S.classe);
+    const head=["Nom","Prénom","Classe","Entreprise","Fiches","Notes","Photos","Dernier dépôt",...COMPETENCES.map(c=>c.c)];
+    const lines=[head,...list.map(s=>{ const st=studentStats(s); return [s.nom,s.prenom,s.classe,st.per?.entreprise||"",st.fiches.length,st.ents.length-st.fiches.length,st.photos,st.last?fmtDate(st.last):"",...COMPETENCES.map(c=>st.cnt[c.c])]; })];
+    const csv="﻿"+lines.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(";")).join("\r\n");
+    saveFile(`suivi_pfmp_${S.classe||"toutes"}_${today()}.csv`,new Blob([csv],{type:"text/csv"}));
+  });
+};
+function viewStudent(){
+  const s=S.students.find(x=>x.id===S.p.id); if(!s) return "<p>Élève introuvable.</p>";
+  const st=studentStats(s); const pers=S.allPeriodes.filter(p=>p.eleve_id===s.id);
+  return `<div class="stack">
+    <div class="row between"><button class="btn small ghost" data-go="home">← Classe</button><button class="btn small primary" data-report="${s.id}">Rapport</button></div>
+    <div><span class="eyebrow">${h(s.classe)} · identifiant ${h(s.identifiant)}</span><h1>${h(s.prenom)} ${h(s.nom)}</h1></div>
+    <div class="split-student"><div class="col">
+    <div class="section-title"><h2>Périodes de PFMP</h2><button class="btn small" data-pfgo="${h(s.classe)}|${(currentPeriodeOf(pers)||{}).numero||1}">Gérer</button></div>
+    ${pers.map(p=>`<div class="card tight"><span class="eyebrow">${h(perLabel(p))}</span><h3>${h(p.entreprise||"Entreprise non renseignée")}</h3><p class="small muted">${p.date_debut?`du ${fmtDate(p.date_debut)} au ${fmtDate(p.date_fin)}`:""}${p.ville?" · "+h(p.ville):""}${p.tuteur?" · tuteur : "+h(p.tuteur):""}</p>
+      ${p.tuteur_token?`<details class="more"><summary>Lien du tuteur</summary><div class="stack" style="gap:8px;margin-top:8px"><p class="small muted">Sans compte, le tuteur voit les fiches de cette PFMP et peut réagir. « Nouveau lien » désactive l'ancien.</p>${linkBoxHTML(p,true)}</div></details>`:""}</div>`).join("")||`<p class="muted">Aucune période de PFMP renseignée.</p>`}
+    <div class="card">${gaugeHTML(st.ents,pers,{max:4,title:"Rapport prêt à "+st.pct+" %"})}</div>
+    <div class="card"><h2>Calendrier des dépôts</h2>${calendarHTML("s-"+s.id,st.ents,pers)}</div>
+    <div class="card"><h2>Compétences</h2>${bornesHTML(st.fiches)}</div>
+    </div><div class="col"><div class="stack" style="gap:8px"><h2>Dépôts (${st.ents.length})</h2>${st.ents.length?st.ents.map(entryCard).join(""):`<p class="muted">Aucun dépôt.</p>`}</div></div></div>
+    <details class="more"><summary>Supprimer cet élève et toutes ses données</summary><p class="small muted" style="margin-block:8px">Son compte de connexion, ses fiches, ses photos, ses périodes et vos commentaires seront effacés.</p><button class="btn danger" data-delstudent="${s.id}">Supprimer définitivement</button></details>
+  </div>`;
+}
+
+/* PROFESSEUR — COMPTES */
+let lastCreated=[]; let accSel=new Set(); let accCls="";
+function accountsListHTML(classes){
+  const list=S.students.filter(s=>!accCls||s.classe===accCls);
+  const allOn=list.length&&list.every(s=>accSel.has(s.id));
+  const nSel=list.filter(s=>accSel.has(s.id)).length;
+  return `<div class="card"><div class="section-title"><h3>Comptes existants (${S.students.length})</h3></div>
+    ${classes.length>1?`<label class="f">Afficher<select id="accFilter"><option value="">Toutes les classes</option>${classes.map(c=>`<option${c===accCls?" selected":""}>${h(c)}</option>`).join("")}</select></label>`:""}
+    <div class="row"><button type="button" class="btn small danger" id="delSel"${nSel?"":" disabled"}>Supprimer la sélection${nSel?` (${nSel})`:""}</button></div>
+    <div class="table-wrap"><table><thead><tr><th><input type="checkbox" id="accAll" aria-label="Tout sélectionner"${allOn?" checked":""}></th><th>Élève</th><th>Classe</th><th>Identifiant</th>${Store.mode==="demo"?"<th>Code</th>":""}<th></th></tr></thead><tbody>
+    ${list.map(s=>`<tr><td><input type="checkbox" class="accChk" value="${s.id}" aria-label="Sélectionner ${h(s.prenom)} ${h(s.nom)}"${accSel.has(s.id)?" checked":""}></td><td>${h(s.nom)} ${h(s.prenom)}</td><td>${h(s.classe)}</td><td class="mono">${h(s.identifiant)}</td>${Store.mode==="demo"?`<td class="mono">${h(s.code)}</td>`:""}<td><button type="button" class="btn small ghost" data-delstudent="${s.id}" aria-label="Supprimer ${h(s.prenom)} ${h(s.nom)}">Supprimer</button></td></tr>`).join("")}
+    </tbody></table></div></div>`;
+}
+async function runDeletion(list, doneMsg){
+  const pr=$("#delProg"); if(pr){ pr.hidden=false; }
+  try{ await Store.deleteStudents(list,(i,n,p)=>{ if(pr) pr.textContent=`Suppression ${i} / ${n} : ${p.prenom} ${p.nom}`; });
+    list.forEach(p=>accSel.delete(p.id)); await refresh(); toast(doneMsg); render();
+  }catch(x){ await refresh(); render(); toast(x.message||"Suppression impossible"); }
+}
+function viewAccounts(){
+  const classes=[...new Set(S.students.map(s=>s.classe).filter(Boolean))].sort();
+  return `<div class="stack">
+    <div class="row between"><button class="btn small ghost" data-go="home">← Classe</button></div>
+    <h1>Comptes et classes</h1>
+    <form class="card" id="accForm">
+      <h3>Créer des comptes</h3>
+      <label class="f">Classe<input type="text" id="accCls" list="clsList" placeholder="ex. 1GEO" value="${h(S.classe||classes[0]||"")}"><datalist id="clsList">${classes.map(c=>`<option value="${h(c)}">`).join("")}</datalist></label>
+      <label class="f">Élèves, un par ligne<span class="hint">NOM Prénom (copiez la liste depuis Pronote ou un tableur)</span><textarea id="accList" rows="6" placeholder="DUPONT Léa&#10;MARTIN Hugo"></textarea></label>
+      <button class="btn primary" type="submit" id="accBtn">Créer les comptes</button>
+      <p class="small muted" id="accProg" hidden></p>
+    </form>
+    ${lastCreated.length?`<div class="card"><h3>Codes à distribuer</h3><p class="notice">Notez ces codes maintenant : ils ne seront plus affichés${Store.mode==="supabase"?" (Supabase ne garde pas les codes en clair)":""}.</p>
+      <div class="table-wrap"><table><thead><tr><th>Élève</th><th>Identifiant</th><th>Code</th></tr></thead><tbody>${lastCreated.map(r=>`<tr><td>${h(r.nom)} ${h(r.prenom)}</td><td class="mono">${h(r.identifiant)}</td><td class="mono">${h(r.code)}</td></tr>`).join("")}</tbody></table></div>
+      <div class="row"><button class="btn" id="copyCodes">Copier le tableau</button><button class="btn" id="csvCodes">Télécharger (.csv)</button></div></div>`:""}
+    ${S.students.length?accountsListHTML(classes):""}
+    ${classes.length?`<div class="card"><h3>Classes</h3>
+      <p class="small muted">Supprimer une classe efface les comptes de tous ses élèves, leurs fiches, photos, périodes et commentaires. À faire en fin de cycle, après la commission CCF.</p>
+      <div class="table-wrap"><table><thead><tr><th>Classe</th><th class="num">Élèves</th><th class="num">Dépôts</th><th></th></tr></thead><tbody>
+      ${classes.map(c=>{ const ids=S.students.filter(s=>s.classe===c).map(s=>s.id); const nd=S.allEntries.filter(e=>ids.includes(e.eleve_id)).length;
+        return `<tr><td><b>${h(c)}</b></td><td class="num">${ids.length}</td><td class="num">${nd}</td><td><button type="button" class="btn small danger" data-delclass="${h(c)}">Supprimer la classe</button></td></tr>`; }).join("")}
+      </tbody></table></div></div>`:""}
+    <p class="small muted" id="delProg" hidden></p>
+  </div>`;
+}
+afterRender.accounts=()=>{
+  $("#accForm").addEventListener("submit",async ev=>{ ev.preventDefault();
+    const cls=$("#accCls").value.trim(); const lines=$("#accList").value.split(/\n/).map(l=>l.trim()).filter(Boolean);
+    if(!lines.length){ toast("Collez au moins un nom"); return; }
+    const btn=$("#accBtn"); btn.disabled=true; const pr=$("#accProg"); pr.hidden=false; const out=[]; const errs=[];
+    for(let i=0;i<lines.length;i++){
+      const parts=lines[i].split(/[\s;,\t]+/).filter(Boolean); let nom,prenom;
+      const up=parts.filter(p=>p===p.toUpperCase() && /[A-Z]/.test(p));
+      if(up.length && up.length<parts.length){ nom=up.join(" "); prenom=parts.filter(p=>!up.includes(p)).join(" "); } else { nom=parts[0]; prenom=parts.slice(1).join(" ")||""; }
+      pr.textContent=`Création ${i+1} / ${lines.length} : ${prenom} ${nom}`;
+      try{ const r=await Store.createStudent({nom,prenom,classe:cls}); out.push({nom:nom.toUpperCase(),prenom,...r}); }catch(x){ errs.push(x.message); if(/Confirm email/.test(x.message)) break; }
+    }
+    lastCreated=out; await refresh(); render();
+    if(errs.length) toast(errs[0]); else toast(plural(out.length,"compte créé","comptes créés"));
+  });
+  $("#accFilter")?.addEventListener("change",ev=>{ accCls=ev.target.value; render(); });
+  $("#accAll")?.addEventListener("change",ev=>{ S.students.filter(s=>!accCls||s.classe===accCls).forEach(s=>ev.target.checked?accSel.add(s.id):accSel.delete(s.id)); render(); });
+  document.querySelectorAll(".accChk").forEach(c=>c.addEventListener("change",()=>{ c.checked?accSel.add(c.value):accSel.delete(c.value); render(); }));
+  $("#delSel")?.addEventListener("click",async()=>{
+    const list=S.students.filter(s=>accSel.has(s.id)&&(!accCls||s.classe===accCls)); if(!list.length) return;
+    if(await confirmBox(`Supprimer ${plural(list.length,"élève","élèves")} ?`,`${list.slice(0,6).map(s=>s.prenom+" "+s.nom).join(", ")}${list.length>6?"…":""}. Leurs comptes, fiches, photos et périodes seront effacés définitivement.`)) runDeletion(list, plural(list.length,"élève supprimé","élèves supprimés"));
+  });
+  document.querySelectorAll("[data-delclass]").forEach(b=>b.addEventListener("click",async()=>{
+    const c=b.dataset.delclass; const list=S.students.filter(s=>s.classe===c);
+    if(await confirmTyped(`Supprimer la classe ${c} ?`,`${plural(list.length,"compte élève","comptes élèves")} et toutes leurs données (fiches, photos, périodes, commentaires) seront effacés définitivement.`, c)){
+      if(S.classe===c) S.classe=""; if(accCls===c) accCls=""; runDeletion(list,`Classe ${c} supprimée`); }
+  }));
+  const txt=()=>lastCreated.map(r=>`${r.nom} ${r.prenom}\t${r.identifiant}\t${r.code}`).join("\n");
+  $("#copyCodes")?.addEventListener("click",async()=>{ try{ await navigator.clipboard.writeText("Élève\tIdentifiant\tCode\n"+txt()); toast("Tableau copié"); }catch(e){ toast("Copie impossible : sélectionnez le tableau à la main"); } });
+  $("#csvCodes")?.addEventListener("click",()=>{ const csv="﻿Nom;Prénom;Identifiant;Code\r\n"+lastCreated.map(r=>[r.nom,r.prenom,r.identifiant,r.code].join(";")).join("\r\n"); saveFile(`codes_eleves_${today()}.csv`,new Blob([csv],{type:"text/csv"})); });
+};
+
+/* =====================================================================
+   ACTIONS GLOBALES (délégation)
+   ===================================================================== */
+const history_ = [];
+document.addEventListener("click",async ev=>{
+  const cp=ev.target.closest("[data-copy]");
+  if(cp){ try{ await navigator.clipboard.writeText(cp.dataset.copy); toast("Lien copié"); }catch(e){ const c=cp.parentElement.querySelector("code"); if(c){ const r=document.createRange(); r.selectNodeContents(c); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); } toast("Sélectionnez le lien et copiez-le"); } return; }
+  const rn=ev.target.closest("[data-renew]");
+  if(rn){ const p=S.allPeriodes.find(x=>x.id===rn.dataset.renew); if(p && await confirmBox("Créer un nouveau lien ?","L'ancien lien ne fonctionnera plus. Il faudra envoyer le nouveau au tuteur.","Nouveau lien")){ try{ await Store.renewToken(p); await refresh(); toast("Nouveau lien créé"); render(); }catch(x){ toast(x.message); } } return; }
+  const cn=ev.target.closest("[data-calnav]");
+  if(cn){ const st=S.cal[cn.dataset.calkey]; const k=+cn.dataset.calnav;
+    if(k===0){ st.ym=today().slice(0,7); st.sel=today(); } else { const [y,m]=st.ym.split("-").map(Number); const d=new Date(y,m-1+k,1); st.ym=iso(d).slice(0,7); st.sel=null; }
+    render(); return; }
+  const cd=ev.target.closest("[data-calday]");
+  if(cd){ const st=S.cal[cd.dataset.calkey]; st.sel = st.sel===cd.dataset.calday ? null : cd.dataset.calday; render(); return; }
+  const sc=ev.target.closest("[data-setcls]");
+  if(sc){ S.classe=sc.dataset.setcls; S.pf={...S.pf,classe:sc.dataset.setcls||undefined}; go("home"); return; }
+  const sx=ev.target.closest("[data-startex]");
+  if(sx && S.me){ const x=exOf(sx.dataset.startex); startDraft("fiche"); const e=S.draft.entry;
+    e.titre=x.t; e.activite=x.a; e.competences=[...x.c]; e.materiel=[...x.m]; e.exemple=x.id; pushRecent("ex",[x.id]);
+    history_.push([S.view,S.p]); go("fiche"); return; }
+  const t=ev.target.closest("[data-go],[data-open],[data-back],[data-cancel],[data-edit],[data-del],[data-tofiche],[data-editper],[data-delperprof],[data-pfgo],[data-student],[data-report],[data-delcom],[data-dlfile],[data-delstudent]");
+  if(!t || !S.me) return;
+  const d=t.dataset;
+  if(d.go){ if(d.go==="fiche"||d.go==="journal"){ if(!S.draft||S.draft.entry.type!==d.go||S.draft.entry.id) S.draft=null; } history_.push([S.view,S.p]); go(d.go); }
+  else if(d.open){ history_.push([S.view,S.p]); go("entry",{id:d.open}); }
+  else if("back" in d){ const prev=history_.pop(); if(prev) go(prev[0],prev[1]); else go("home"); }
+  else if("cancel" in d){ if(await confirmBox("Abandonner ?","Ce que vous avez saisi ne sera pas enregistré.","Abandonner")){ S.draft=null; const prev=history_.pop(); prev?go(prev[0],prev[1]):go("home"); } }
+  else if(d.edit){ const e=findEntry(d.edit); startDraft(e.type,e); go(e.type==="fiche"?"fiche":"journal"); }
+  else if(d.tofiche){ const e=findEntry(d.tofiche); startDraft("fiche",e); go("fiche"); }
+  else if(d.del){ const e=findEntry(d.del); if(await confirmBox("Supprimer ce dépôt ?","La fiche et ses photos seront effacées définitivement.")){ try{ await Store.deleteEntry(e); await refresh(); toast("Dépôt supprimé"); go("dossier"); }catch(x){ toast(x.message); } } }
+  else if(d.editper){ history_.push([S.view,S.p]); go("pfmpForm",{id:d.editper}); }
+  else if(d.delperprof){ const p=S.allPeriodes.find(x=>x.id===d.delperprof); if(await confirmBox("Retirer cette période ?","Les fiches de l'élève sont conservées mais ne seront plus rattachées à cette entreprise.","Retirer")){ try{ await Store.deletePeriode(p); await refresh(); toast("Période retirée"); render(); }catch(x){ toast(x.message); } } }
+  else if(d.pfgo){ const [c,n]=d.pfgo.split("|"); S.pf={classe:c,numero:+n||1}; history_.push([S.view,S.p]); go("periodes"); }
+  else if(d.student){ history_.push([S.view,S.p]); go("student",{id:d.student}); }
+  else if(d.report){ history_.push([S.view,S.p]); go("report",{eleve:d.report}); }
+  else if(d.delcom){ const c=S.comments.find(x=>x.id===d.delcom); if(await confirmBox("Effacer ce commentaire ?","L'élève ne le verra plus.","Effacer")){ await Store.deleteComment(c); S.comments=S.comments.filter(x=>x.id!==c.id); render(); } }
+  else if(d.dlfile){ const b=await Store.fileBlob(d.dlfile); if(b) saveFile(d.name||"fichier",b); else toast("Fichier introuvable"); }
+  else if(d.delstudent){ const s=S.students.find(x=>x.id===d.delstudent); if(await confirmBox(`Supprimer ${s.prenom} ${s.nom} ?`,"Son compte, ses fiches, ses photos et ses périodes seront effacés définitivement.")){ try{ await Store.deleteStudent(s); await refresh(); toast("Élève supprimé"); go(S.view==="accounts"?"accounts":"home"); }catch(x){ toast(x.message); } } }
+});
+document.addEventListener("keydown",ev=>{ if(ev.key==="Enter" && ev.target.matches("tr[data-student]")) ev.target.click(); });
+$("#logoutBtn").addEventListener("click",async()=>{ if(S.tutor){ S.tutor=null; try{ history.replaceState(null,"",location.pathname); }catch(e){} render(); return; } await Store.logout(); S.me=null; S.draft=null; history_.length=0; go("home"); });
+
+/* Le professeur voit les commentaires de tous les dépôts : on les charge à l'ouverture d'un élève */
+const _go=go;
+go = function(view,p={}){
+  if(S.me?.role==="prof" && (view==="student"||view==="entry")){
+    const ids = view==="student" ? S.allEntries.filter(e=>e.eleve_id===p.id).map(e=>e.id) : [p.id];
+    Store.listComments(ids).then(cs=>{ const keep=S.comments.filter(c=>!ids.includes(c.entry_id)); S.comments=[...keep,...cs]; if(S.view===view) render(); });
+  }
+  _go(view,p);
+};
+
+/* Palettes de couleurs (mémorisées sur l'appareil) */
+const PALETTES=[["geometre","Ma PFMP","#1F4F8F","#5DAF5A"],["lavande","Lavande","#6F5DD3","#B5D36A"],["corail","Corail","#DD6B5A","#EDBF55"],["ocean","Océan","#3A72CF","#EDBF55"],["menthe","Menthe","#2C9C79","#E58CA6"]];
+function applyPalette(k){ if(!PALETTES.some(p=>p[0]===k)) k="geometre"; document.documentElement.setAttribute("data-palette",k); try{ localStorage.setItem("carnet-palette",k); }catch(e){} 
+  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content="#FFFFFF"; return k; }
+let curPal=(()=>{ try{ return localStorage.getItem("carnet-palette")||"geometre"; }catch(e){ return "geometre"; } })(); curPal=applyPalette(curPal);
+function renderPal(){ $("#palPop").innerHTML=`<b>Couleurs de l'appli</b>${PALETTES.map(([k,l,a,b])=>`<button type="button" class="pal-opt${k===curPal?" on":""}" data-pal="${k}"><i style="background:conic-gradient(${a} 0 50%,${b} 50% 100%)"></i>${l}</button>`).join("")}`; }
+$("#palBtn").addEventListener("click",ev=>{ ev.stopPropagation(); const pop=$("#palPop"); pop.hidden=!pop.hidden; $("#palBtn").setAttribute("aria-expanded",String(!pop.hidden)); if(!pop.hidden) renderPal(); });
+$("#palPop").addEventListener("click",ev=>{ ev.stopPropagation(); const b=ev.target.closest("[data-pal]"); if(!b) return; curPal=applyPalette(b.dataset.pal); renderPal(); });
+document.addEventListener("click",()=>{ const pop=$("#palPop"); if(!pop.hidden){ pop.hidden=true; $("#palBtn").setAttribute("aria-expanded","false"); } });
+document.addEventListener("keydown",ev=>{ if(ev.key==="Escape"){ $("#palPop").hidden=true; } });
+/* En-tête personnalisé selon CONFIG */
+$("#brandMain").textContent=CONFIG.DIPLOME; $("#brandSub").textContent=CONFIG.LYCEE;
+/* Application installable : service worker (ignoré hors https ou dans un aperçu) */
+try{ if("serviceWorker" in navigator && location.protocol==="https:" && !/claude\.ai|claudeusercontent/.test(location.hostname)) navigator.serviceWorker.register("sw.js").catch(()=>{}); }catch(e){}
+/* Démarrage */
+(async()=>{
+  try{
+    await Store.init();
+    const qs=new URLSearchParams(location.search); const hm=/^#tuteur-([0-9a-zA-Z-]{6,})$/.exec(location.hash||"");
+    const tok=qs.get("tuteur")||(hm&&hm[1]);
+    if(tok){ openTutor(tok); return; }
+    S.me = await Store.session();
+    if(S.me) await refresh();
+  }catch(x){
+    $("#view").innerHTML=`<div class="card"><h2>Connexion au serveur impossible</h2><p>${h(x.message)}</p><p class="small muted">Vérifiez la connexion internet puis rechargez la page.</p></div>`; return;
+  }
+  render();
+})();
+</script>
+
+</body>
+</html>
